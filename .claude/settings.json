@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in */proto/duel.proto|proto/duel.proto) [ -f scripts/gen_proto.sh ] && bash scripts/gen_proto.sh;; esac 2>/dev/null || true",
+            "statusMessage": "Regenerating gRPC stubs"
+          },
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in */server/*.py|server/*.py) command -v ruff >/dev/null && [ -f \"$f\" ] && { ruff format \"$f\"; ruff check --fix \"$f\"; };; esac 2>/dev/null || true",
+            "statusMessage": "Formatting Python"
+          }
+        ]
+      }
+    ]
+  }
+}
