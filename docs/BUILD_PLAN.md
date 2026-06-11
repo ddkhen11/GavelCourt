@@ -23,10 +23,10 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 ---
 
 ## Phase 0 — Foundation
-- [ ] Make initial commit of current docs (`CLAUDE.md`, `docs/`, `.gitignore`) — _gate: `git log` shows baseline commit_
-- [ ] `requirements.txt` per SPEC — _gate: `pip install -r requirements.txt` succeeds in a venv_
-- [ ] `server/constants.py` (full, from SPEC § Constants) — _gate: `python -c "import constants"` clean_
-- [ ] `scripts/gen_proto.sh` (from SPEC) + `chmod +x` — _gate: file exists, executable_
+- [x] Make initial commit of current docs (`CLAUDE.md`, `docs/`, `.gitignore`) — _gate: `git log` shows baseline commit_
+- [x] `requirements.txt` per SPEC — _gate: `pip install -r requirements.txt` succeeds in a venv_
+- [x] `server/constants.py` (full, from SPEC § Constants) — _gate: `python -c "import constants"` clean_
+- [x] `scripts/gen_proto.sh` (from SPEC) + `chmod +x` — _gate: file exists, executable_
 
 ## Phase 1 — Proto + codegen
 - [ ] `proto/duel.proto` (full corrected schema from SPEC) — _gate: `protoc` parses it_
