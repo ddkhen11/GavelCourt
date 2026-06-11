@@ -29,8 +29,8 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] `scripts/gen_proto.sh` (from SPEC) + `chmod +x` — _gate: file exists, executable_
 
 ## Phase 1 — Proto + codegen
-- [ ] `proto/duel.proto` (full corrected schema from SPEC) — _gate: `protoc` parses it_
-- [ ] Run `scripts/gen_proto.sh`; verify `gen/duel_pb2.py`, `gen/duel_pb2_grpc.py`, and TS stubs exist — _gate: generated files present, importable_
+- [x] `proto/duel.proto` (full corrected schema from SPEC) — _gate: `protoc` parses it_
+- [x] Run `scripts/gen_proto.sh`; verify `gen/duel_pb2.py`, `gen/duel_pb2_grpc.py`, and TS stubs exist — _gate: generated files present, importable_
 
 ## Phase 2 — Data layer
 - [ ] **Inspect `server/data/laker_stats.xlsx`**: print columns + sample rows, map to name/season/team/**position**/laker_score/rapm/rapm_offense/rapm_defense/war — _gate: column mapping written down in a comment_

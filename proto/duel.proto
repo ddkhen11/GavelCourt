@@ -1,0 +1,201 @@
+syntax = "proto3";
+
+package duel.v1;
+
+service DuelService {
+  // Unary — registration (creates the player row, returns the auth token)
+  rpc RegisterPlayer(RegisterPlayerRequest) returns (RegisterPlayerResponse);
+
+  // Unary — CHALLENGE matchmaking (private match via join code)
+  rpc CreateMatch(CreateMatchRequest)  returns (CreateMatchResponse);
+  rpc JoinMatch(JoinMatchRequest)      returns (JoinMatchResponse);
+
+  // Unary — RANKED matchmaking ("Find Ranked Match" button). Awaits pairing.
+  rpc FindRankedMatch(FindRankedMatchRequest) returns (FindRankedMatchResponse);
+
+  // Bidi streaming — one stream per player, open for the entire match
+  rpc StreamDuel(stream PlayerAction)  returns (stream GameEvent);
+
+  // Server streaming — spectators (neutral view)
+  rpc WatchMatch(WatchMatchRequest)    returns (stream GameEvent);
+}
+
+// ── Registration ───────────────────────────────────────
+
+message RegisterPlayerRequest  { string username = 1; }
+message RegisterPlayerResponse {
+  string player_id  = 1;   // server-generated uuid
+  string auth_token = 2;   // server-generated uuid; client stores it (localStorage)
+}
+
+// ── Matchmaking ────────────────────────────────────────
+
+message CreateMatchRequest {
+  string player_id = 1;
+  MatchMode mode   = 2;    // CHALLENGE only via this RPC; RANKED uses FindRankedMatch
+}
+
+message CreateMatchResponse {
+  string match_id  = 1;
+  string join_code = 2;    // set for CHALLENGE mode
+}
+
+message JoinMatchRequest {
+  string match_id  = 1;
+  string player_id = 2;
+  string join_code = 3;    // required for CHALLENGE mode
+}
+
+message JoinMatchResponse {
+  string match_id    = 1;
+  MatchStatus status = 2;
+}
+
+message FindRankedMatchRequest  { string player_id = 1; }
+message FindRankedMatchResponse {
+  string match_id    = 1;  // set once paired
+  MatchStatus status = 2;  // READY once paired
+}
+
+message WatchMatchRequest { string match_id = 1; }
+
+enum MatchMode {
+  MATCH_MODE_UNSPECIFIED = 0;
+  MATCH_MODE_RANKED      = 1;
+  MATCH_MODE_CHALLENGE   = 2;
+}
+
+enum MatchStatus {
+  MATCH_STATUS_UNSPECIFIED = 0;
+  MATCH_STATUS_WAITING     = 1;
+  MATCH_STATUS_READY       = 2;
+  MATCH_STATUS_IN_PROGRESS = 3;
+  MATCH_STATUS_COMPLETE    = 4;
+}
+
+// ── Player Actions (client → server) ───────────────────
+
+message PlayerAction {
+  oneof action {
+    ReadyAction ready = 1;
+    BidAction   bid   = 2;
+    PassAction  pass  = 3;
+  }
+}
+
+message ReadyAction {}
+message BidAction   { uint32 amount = 1; }  // 0 is treated as a pass
+message PassAction  {}
+
+// ── Game Events (server → client) ──────────────────────
+
+message GameEvent {
+  oneof event {
+    GameStartedEvent   game_started   = 1;
+    CardFlippedEvent   card_flipped   = 2;
+    BidWindowOpenEvent bid_window_open = 3;
+    BidResolvedEvent   bid_resolved   = 4;
+    CardPassedEvent    card_passed    = 5;
+    PityTriggeredEvent pity_triggered = 6;
+    GameEndedEvent     game_ended     = 7;
+    ErrorEvent         error          = 8;
+  }
+}
+
+message GameStartedEvent {
+  string match_id     = 1;
+  uint32 board_size   = 2;
+  uint32 your_credits = 3;   // STARTING_CREDITS (100)
+  uint32 roster_size  = 4;   // ROSTER_SIZE (5)
+}
+
+message CardFlippedEvent {
+  uint32   card_number     = 1;  // 1-indexed (counts every card shown, incl. pity)
+  uint32   cards_remaining = 2;  // board cards still to come after this one
+  CardInfo card            = 3;
+  CardTier tier            = 4;
+}
+
+message CardInfo {
+  string player_id   = 1;
+  string player_name = 2;
+  string season      = 3;  // e.g. "1991"
+  string team        = 4;
+  string position    = 5;  // PG / SG / SF / PF / C — identity, NOT a hidden stat
+  // Performance stats intentionally omitted here — hidden until after bid resolves
+}
+
+enum CardTier {
+  CARD_TIER_UNSPECIFIED = 0;
+  CARD_TIER_S           = 1;
+  CARD_TIER_A           = 2;
+  CARD_TIER_B           = 3;
+  CARD_TIER_C           = 4;
+}
+
+message BidWindowOpenEvent {
+  uint32 duration_seconds = 1;  // BID_WINDOW_SECONDS (10)
+  uint32 your_max_bid     = 2;  // reserve-rule cap for THIS player on THIS card
+}
+
+message BidResolvedEvent {
+  bool      you_won                    = 1;
+  uint32    winning_bid                = 2;
+  uint32    your_bid                   = 3;
+  uint32    opponent_bid               = 4;
+  CardStats revealed_stats             = 5;   // stats revealed here
+  uint32    your_credits_remaining     = 6;
+  uint32    opponent_credits_remaining = 7;
+  uint32    your_players_drafted       = 8;
+  uint32    opponent_players_drafted   = 9;
+}
+
+// CardStats is self-contained: it carries identity AND stats so the Results screen
+// can render full lineups without a separate lookup.
+message CardStats {
+  string player_id    = 1;
+  string player_name  = 2;
+  string season       = 3;
+  string team         = 4;
+  string position     = 5;
+  float  laker_score  = 6;
+  float  rapm         = 7;
+  float  rapm_offense = 8;
+  float  rapm_defense = 9;
+  float  war          = 10;
+}
+
+message CardPassedEvent {
+  uint32 consecutive_passes = 1;  // pity counter — shown in UI
+}
+
+message PityTriggeredEvent {}     // the card being flipped now is guaranteed A-tier or better
+
+message GameEndedEvent {
+  GameResult result          = 1;
+  Lineup     your_lineup     = 2;
+  Lineup     opponent_lineup = 3;
+  float      your_score      = 4;
+  float      opponent_score  = 5;
+  int32      elo_change      = 6;
+  bool       by_forfeit      = 7;  // true if the opponent disconnected
+}
+
+message Lineup {
+  repeated CardStats players      = 1;
+  float              impact_score = 2;
+  float              bonus        = 3;
+  float              total_score  = 4;
+}
+
+enum GameResult {
+  GAME_RESULT_UNSPECIFIED = 0;
+  GAME_RESULT_WIN         = 1;
+  GAME_RESULT_LOSS        = 2;
+  GAME_RESULT_TIE         = 3;
+}
+
+message ErrorEvent {
+  string code    = 1;  // BID_EXCEEDS_BALANCE | BID_EXCEEDS_MAX | INVALID_PHASE | ROSTER_FULL
+  string message = 2;
+}
