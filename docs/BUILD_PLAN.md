@@ -45,8 +45,8 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] Implement `RegisterPlayer`, `CreateMatch`, `JoinMatch`, `FindRankedMatch` — _gate: exercise each with `grpcurl`_
 
 ## Phase 4 — Game loop 🚦
-- [ ] `server/game_loop.py`: state machine — per-player queues, phase gate, reserve rule, draft cap, pity fix, disconnect/forfeit — _gate: unit-test `collect_bids`, `resolve_auction`, pity no-advance_
-- [ ] `server/servicer.py`: `StreamDuel` handler (auth, per-player queues, stored task refs) — _gate: import + handler wiring sanity test_
+- [x] `server/game_loop.py`: state machine — per-player queues, phase gate, reserve rule, draft cap, pity fix, disconnect/forfeit — _gate: unit-test `collect_bids`, `resolve_auction`, pity no-advance_
+- [x] `server/servicer.py`: `StreamDuel` handler (auth, per-player queues, stored task refs) — _gate: import + handler wiring sanity test_
 - [ ] 🚦 **Two-client integration test**: two Python CLI clients connect, play a full match, both reach 5 — _gate: **human** runs it and confirms a clean end-to-end match_
 
 ## Phase 5 — Scoring + Elo + finalize

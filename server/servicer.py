@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 import grpc
 import sys
@@ -7,13 +8,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "gen"))
 import duel_pb2 as pb
 import duel_pb2_grpc as pb_grpc
 
-from session import PlayerSeason
+from session import Phase
 import db as database
 import matchmaking
-
-
-def _ps_from_row(r: dict) -> PlayerSeason:
-    return PlayerSeason(**{k: r[k] for k in PlayerSeason.__dataclass_fields__})
+from game_loop import game_loop, wrap
 
 
 class DuelServiceImpl(pb_grpc.DuelServiceServicer):
@@ -53,16 +51,88 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
             status=pb.MATCH_STATUS_READY,
         )
 
-    # ── Bidi streaming (stub — implemented in Phase 4) ─────────────────────
+    # ── Bidi streaming ─────────────────────────────────────────────────────
 
     async def StreamDuel(self, request_iterator, context):
-        await context.abort(
-            grpc.StatusCode.UNIMPLEMENTED, "StreamDuel not yet implemented"
-        )
+        # 1. Authenticate via metadata
+        md = dict(context.invocation_metadata())
+        player_id = md.get("player-id")
+        token = md.get("auth-token")
+        if not player_id or not await database.verify_token(player_id, token):
+            await context.abort(grpc.StatusCode.UNAUTHENTICATED, "invalid token")
+            return
 
-    # ── Spectator stream (stub) ─────────────────────────────────────────────
+        # 2. Look up the session this player belongs to
+        try:
+            session = matchmaking.get_session_for_player(player_id)
+        except LookupError:
+            await context.abort(grpc.StatusCode.NOT_FOUND, "no session")
+            return
+
+        session.event_queues[player_id] = asyncio.Queue()
+        session.action_queues[player_id] = asyncio.Queue()
+        session.players[player_id].connected = True
+
+        # 3. Reader task: phase-gated action enqueue
+        async def reader():
+            try:
+                async for action in request_iterator:
+                    if action.HasField("ready") and session.phase is Phase.WAITING:
+                        await session.action_queues[player_id].put(action)
+                    elif (
+                        action.WhichOneof("action") in ("bid", "pass")
+                        and session.phase is Phase.BID_WINDOW
+                    ):
+                        await session.action_queues[player_id].put(action)
+                    else:
+                        await session.event_queues[player_id].put(
+                            wrap(
+                                pb.ErrorEvent(
+                                    code="INVALID_PHASE",
+                                    message="action not accepted right now",
+                                )
+                            )
+                        )
+            except Exception:
+                pass
+            finally:
+                session.players[player_id].disconnected = True
+
+        session.reader_tasks[player_id] = asyncio.create_task(reader())
+
+        # 4. Start game loop exactly once when both players are connected
+        if len(session.event_queues) == 2 and not session.game_loop_started:
+            session.game_loop_started = True
+            session.loop_task = asyncio.create_task(game_loop(session))
+
+        # 5. Yield events to client until game ends
+        try:
+            while True:
+                event = await session.event_queues[player_id].get()
+                yield event
+                if event.HasField("game_ended"):
+                    break
+        finally:
+            session.players[player_id].disconnected = True
+
+    # ── Spectator stream ────────────────────────────────────────────────────
 
     async def WatchMatch(self, request, context):
-        await context.abort(
-            grpc.StatusCode.UNIMPLEMENTED, "WatchMatch not yet implemented"
-        )
+        try:
+            session = matchmaking.get_session_by_match(request.match_id)
+        except LookupError:
+            await context.abort(grpc.StatusCode.NOT_FOUND, "match not found")
+            return
+
+        spectator_id = str(uuid.uuid4())
+        q: asyncio.Queue = asyncio.Queue()
+        session.spectator_queues[spectator_id] = q
+
+        try:
+            while True:
+                event = await q.get()
+                yield event
+                if event.HasField("game_ended"):
+                    break
+        finally:
+            session.spectator_queues.pop(spectator_id, None)
