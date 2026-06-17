@@ -9,6 +9,8 @@ venv/
 *.sqlite
 *.sqlite3
 *.db
+*.db-shm
+*.db-wal
 !server/data/nba_stats.db
 
 # Node / frontend
