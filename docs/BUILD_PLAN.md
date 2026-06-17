@@ -40,9 +40,9 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] `server/board.py`: `BoardBuilder.build()` returning `(board, pity_pool)` — _gate: **test** builds 20 boards, asserts both constraints hold + pity_pool excludes board cards_
 
 ## Phase 3 — Server skeleton
-- [ ] `server/matchmaking.py`: session registry, ranked single-waiter queue, `create_session_with_players` (builds board) — _gate: unit test pairs two players into one session_
-- [ ] `server/main.py`: grpc.aio bootstrap + reflection, loads data at startup — _gate: server boots, reflection lists `DuelService`_
-- [ ] Implement `RegisterPlayer`, `CreateMatch`, `JoinMatch`, `FindRankedMatch` — _gate: exercise each with `grpcurl`_
+- [x] `server/matchmaking.py`: session registry, ranked single-waiter queue, `create_session_with_players` (builds board) — _gate: unit test pairs two players into one session_
+- [x] `server/main.py`: grpc.aio bootstrap + reflection, loads data at startup — _gate: server boots, reflection lists `DuelService`_
+- [x] Implement `RegisterPlayer`, `CreateMatch`, `JoinMatch`, `FindRankedMatch` — _gate: exercise each with `grpcurl`_
 
 ## Phase 4 — Game loop 🚦
 - [ ] `server/game_loop.py`: state machine — per-player queues, phase gate, reserve rule, draft cap, pity fix, disconnect/forfeit — _gate: unit-test `collect_bids`, `resolve_auction`, pity no-advance_
