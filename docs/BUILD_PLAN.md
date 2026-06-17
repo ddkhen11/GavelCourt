@@ -33,11 +33,11 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] Run `scripts/gen_proto.sh`; verify `gen/duel_pb2.py`, `gen/duel_pb2_grpc.py`, and TS stubs exist — _gate: generated files present, importable_
 
 ## Phase 2 — Data layer
-- [ ] **Inspect `server/data/laker_stats.xlsx`**: print columns + sample rows, map to name/season/team/**position**/laker_score/rapm/rapm_offense/rapm_defense/war — _gate: column mapping written down in a comment_
-- [ ] `server/db.py`: 3 tables, WAL, single shared aiosqlite connection — _gate: tables created on a temp db_
-- [ ] xlsx loader: filter `>= 3.5`, assign tiers, deterministic `player_id`, upsert — _gate: row count > 0; spot-check 3 rows match the sheet_
-- [ ] `server/session.py`: `PlayerSeason`, `PlayerState` (incl. `max_bid`), `GameSession` dataclasses — _gate: import clean; unit test `max_bid` reserve formula_
-- [ ] `server/board.py`: `BoardBuilder.build()` returning `(board, pity_pool)` — _gate: **test** builds 20 boards, asserts both constraints hold + pity_pool excludes board cards_
+- [x] **Inspect `server/data/laker_stats.xlsx`**: print columns + sample rows, map to name/season/team/**position**/laker_score/rapm/rapm_offense/rapm_defense/war — _gate: column mapping written down in a comment_
+- [x] `server/db.py`: 3 tables, WAL, single shared aiosqlite connection — _gate: tables created on a temp db_
+- [x] xlsx loader: filter `>= 3.5`, assign tiers, deterministic `player_id`, upsert — _gate: row count > 0; spot-check 3 rows match the sheet_
+- [x] `server/session.py`: `PlayerSeason`, `PlayerState` (incl. `max_bid`), `GameSession` dataclasses — _gate: import clean; unit test `max_bid` reserve formula_
+- [x] `server/board.py`: `BoardBuilder.build()` returning `(board, pity_pool)` — _gate: **test** builds 20 boards, asserts both constraints hold + pity_pool excludes board cards_
 
 ## Phase 3 — Server skeleton
 - [ ] `server/matchmaking.py`: session registry, ranked single-waiter queue, `create_session_with_players` (builds board) — _gate: unit test pairs two players into one session_
