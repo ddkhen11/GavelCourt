@@ -1,0 +1,8 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": ["gen", "server"],
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "standard",
+  "reportMissingModuleSource": "none"
+}
