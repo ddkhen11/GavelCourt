@@ -82,7 +82,6 @@ def join_challenge_match(match_id: str, player_id: str, join_code: str) -> GameS
         raise ValueError("invalid join code")
 
     session = _sessions_by_match[match_id]
-    creator_id = pending["creator_id"]
     del _pending_challenge[match_id]
 
     board, pity_pool = BoardBuilder().build(_tier_pools)

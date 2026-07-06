@@ -35,7 +35,7 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
                 request.match_id, request.player_id, request.join_code
             )
         except ValueError as e:
-            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))  # type: ignore[misc]
             return
         return pb.JoinMatchResponse(
             match_id=session.match_id,
@@ -56,17 +56,23 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
     async def StreamDuel(self, request_iterator, context):
         # 1. Authenticate via metadata
         md = dict(context.invocation_metadata())
-        player_id = md.get("player-id")
-        token = md.get("auth-token")
-        if not player_id or not await database.verify_token(player_id, token):
-            await context.abort(grpc.StatusCode.UNAUTHENTICATED, "invalid token")
+        raw_pid = md.get("player-id")
+        raw_tok = md.get("auth-token")
+        if not raw_pid or not raw_tok:
+            await context.abort(grpc.StatusCode.UNAUTHENTICATED, "missing credentials")  # type: ignore[misc]
+            return
+        # grpc text-key metadata is always str at runtime; decode defensively for stubs
+        player_id = raw_pid if isinstance(raw_pid, str) else raw_pid.decode()
+        token = raw_tok if isinstance(raw_tok, str) else raw_tok.decode()
+        if not await database.verify_token(player_id, token):
+            await context.abort(grpc.StatusCode.UNAUTHENTICATED, "invalid token")  # type: ignore[misc]
             return
 
         # 2. Look up the session this player belongs to
         try:
             session = matchmaking.get_session_for_player(player_id)
         except LookupError:
-            await context.abort(grpc.StatusCode.NOT_FOUND, "no session")
+            await context.abort(grpc.StatusCode.NOT_FOUND, "no session")  # type: ignore[misc]
             return
 
         session.event_queues[player_id] = asyncio.Queue()
@@ -121,7 +127,7 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
         try:
             session = matchmaking.get_session_by_match(request.match_id)
         except LookupError:
-            await context.abort(grpc.StatusCode.NOT_FOUND, "match not found")
+            await context.abort(grpc.StatusCode.NOT_FOUND, "match not found")  # type: ignore[misc]
             return
 
         spectator_id = str(uuid.uuid4())
