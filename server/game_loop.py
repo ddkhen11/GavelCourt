@@ -281,6 +281,7 @@ async def game_loop(session: GameSession) -> None:
 
         is_pity = False
         card = session.current_card()
+        assert card is not None  # guaranteed by while condition
 
         if session.consecutive_passes >= PITY_THRESHOLD and session.pity_pool:
             card = session.pity_pool.pop(random.randrange(len(session.pity_pool)))
