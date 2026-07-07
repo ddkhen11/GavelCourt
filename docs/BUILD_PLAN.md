@@ -50,7 +50,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [X] 🚦 **Two-client integration test**: two Python CLI clients connect, play a full match, both reach 5 — _gate: **human** runs it and confirms a clean end-to-end match_
 
 ## Phase 5 — Scoring + Elo + finalize
-- [ ] `server/scoring.py` — _gate: **test** known lineup → expected impact + each bonus path_
+- [x] `server/scoring.py` — _gate: **test** known lineup → expected impact + each bonus path_
 - [ ] `server/elo.py` (win/loss + tie) — _gate: **test** symmetric deltas, tie path_
 - [ ] `finalize_game` + `db.record_match` (elo persist, win/loss counters, matches row) — _gate: full CLI match writes correct rows_
 
