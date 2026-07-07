@@ -205,7 +205,7 @@ async def finalize_game(session: GameSession, forfeit: bool) -> None:
 
     elo_changes = await _apply_elo(session, winner_id)
     flat_scores = {a.player_id: ta, b.player_id: tb}
-    await database.record_match(session, flat_scores, elo_changes)
+    await database.record_match(session, flat_scores, elo_changes, winner_id)
 
     lineups = {
         a.player_id: pb.Lineup(

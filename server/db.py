@@ -102,15 +102,18 @@ async def get_player_elo(player_id: str) -> int:
         return row["elo"] if row else 1000
 
 
-async def record_match(session, scores: dict, elo_changes: dict) -> None:
-    """Persist match result and update player elo/win/loss counters."""
+async def record_match(
+    session, scores: dict, elo_changes: dict, winner_id: str | None
+) -> None:
+    """Persist match result and update player elo/win/loss counters.
+
+    winner_id comes from finalize_game (None == tie). It is passed explicitly
+    rather than derived from scores because a forfeiting player loses even
+    with the higher score.
+    """
     db = get_db()
     player_ids = list(session.players.keys())
     a_id, b_id = player_ids[0], player_ids[1]
-
-    winner_id = None
-    if scores[a_id] != scores[b_id]:
-        winner_id = a_id if scores[a_id] > scores[b_id] else b_id
 
     await db.execute(
         """INSERT INTO matches

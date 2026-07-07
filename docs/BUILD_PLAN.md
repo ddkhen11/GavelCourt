@@ -52,7 +52,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 ## Phase 5 — Scoring + Elo + finalize
 - [x] `server/scoring.py` — _gate: **test** known lineup → expected impact + each bonus path_
 - [x] `server/elo.py` (win/loss + tie) — _gate: **test** symmetric deltas, tie path_
-- [ ] `finalize_game` + `db.record_match` (elo persist, win/loss counters, matches row) — _gate: full CLI match writes correct rows_
+- [x] `finalize_game` + `db.record_match` (elo persist, win/loss counters, matches row) — _gate: full CLI match writes correct rows_
 
 ## Phase 6 — Web frontend 🚦
 - [ ] Vite + React scaffold, port 3000, deps installed — _gate: `npm run dev` serves :3000_

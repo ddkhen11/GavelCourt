@@ -159,8 +159,8 @@ class _DbStub(types.SimpleNamespace):
         async def get_player_elo(pid):
             return 1000
 
-        async def record_match(session, scores, elo_changes):
-            self.recorded.append((session.match_id, scores, elo_changes))
+        async def record_match(session, scores, elo_changes, winner_id):
+            self.recorded.append((session.match_id, scores, elo_changes, winner_id))
 
         super().__init__(get_player_elo=get_player_elo, record_match=record_match)
 
