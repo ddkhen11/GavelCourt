@@ -47,7 +47,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 ## Phase 4 — Game loop 🚦
 - [x] `server/game_loop.py`: state machine — per-player queues, phase gate, reserve rule, draft cap, pity fix, disconnect/forfeit — _gate: unit-test `collect_bids`, `resolve_auction`, pity no-advance_
 - [x] `server/servicer.py`: `StreamDuel` handler (auth, per-player queues, stored task refs) — _gate: import + handler wiring sanity test_
-- [ ] 🚦 **Two-client integration test**: two Python CLI clients connect, play a full match, both reach 5 — _gate: **human** runs it and confirms a clean end-to-end match_
+- [X] 🚦 **Two-client integration test**: two Python CLI clients connect, play a full match, both reach 5 — _gate: **human** runs it and confirms a clean end-to-end match_
 
 ## Phase 5 — Scoring + Elo + finalize
 - [ ] `server/scoring.py` — _gate: **test** known lineup → expected impact + each bonus path_
