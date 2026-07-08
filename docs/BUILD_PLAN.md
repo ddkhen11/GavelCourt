@@ -55,7 +55,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] `finalize_game` + `db.record_match` (elo persist, win/loss counters, matches row) — _gate: full CLI match writes correct rows_
 
 ## Phase 6 — Web frontend 🚦
-- [ ] Vite + React scaffold, port 3000, deps installed — _gate: `npm run dev` serves :3000_
+- [x] Vite + React scaffold, port 3000, deps installed — _gate: `npm run dev` serves :3000_
 - [ ] grpc-web codegen into `client/src/grpc` — _gate: stubs import in TS_
 - [ ] `useMatch` (Find Ranked Match + challenge code) — _gate: registers + matches against live server_
 - [ ] `useDuel` (bidi stream mgmt) — _gate: receives GameStarted/CardFlipped events_
