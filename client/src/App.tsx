@@ -1,104 +1,51 @@
-import { useState } from "react";
 import { useMatch } from "./hooks/useMatch";
 import { useDuel } from "./hooks/useDuel";
+import Lobby from "./components/Lobby";
+import Board from "./components/Board";
+import Lineup from "./components/Lineup";
+import Results from "./components/Results";
 
 export default function App() {
   const match = useMatch();
   const duel = useDuel(match.identity, match.matchId);
-  const [username, setUsername] = useState("");
-  const [joinMatchId, setJoinMatchId] = useState("");
-  const [joinCode, setJoinCode] = useState("");
+
+  const inDuel = match.matchId !== null;
 
   return (
     <main>
       <h1>NBA Auction Draft</h1>
 
-      {!match.identity ? (
-        <section>
-          <input
-            data-testid="username"
-            placeholder="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <button
-            data-testid="register"
-            disabled={!username}
-            onClick={() => void match.register(username)}
-          >
-            Register
-          </button>
-        </section>
-      ) : (
-        <section>
-          <p data-testid="identity">
-            Playing as <strong>{match.identity.username}</strong>
-          </p>
-          <button
-            data-testid="find-ranked"
-            onClick={() => void match.findRankedMatch()}
-          >
-            Find Ranked Match
-          </button>
-          <button
-            data-testid="create-challenge"
-            onClick={() => void match.createChallenge()}
-          >
-            Create Challenge
-          </button>
-          <div>
-            <input
-              data-testid="join-match-id"
-              placeholder="match id"
-              value={joinMatchId}
-              onChange={(e) => setJoinMatchId(e.target.value)}
-            />
-            <input
-              data-testid="join-code"
-              placeholder="join code"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-            />
-            <button
-              data-testid="join-challenge"
-              disabled={!joinMatchId || !joinCode}
-              onClick={() => void match.joinChallenge(joinMatchId, joinCode)}
-            >
-              Join Challenge
-            </button>
-          </div>
-        </section>
+      {!inDuel && <Lobby match={match} />}
+
+      {inDuel && match.matchId && (
+        <p data-testid="match-id">{match.matchId}</p>
+      )}
+      {inDuel && match.status === "waiting" && match.joinCode && (
+        <p>
+          Share match id <code>{match.matchId}</code> and code{" "}
+          <code data-testid="challenge-code">{match.joinCode}</code>
+        </p>
       )}
 
-      <p data-testid="status">{match.status}</p>
-      {match.matchId && <p data-testid="match-id">{match.matchId}</p>}
-      {match.joinCode && <p data-testid="challenge-code">{match.joinCode}</p>}
-      {match.error && <p data-testid="error">{match.error}</p>}
-
-      {match.matchId && (
-        <section>
-          <h2>Duel</h2>
-          <p data-testid="duel-connected">
-            {duel.state.connected ? "connected" : "disconnected"}
-          </p>
-          <button data-testid="ready" onClick={duel.sendReady}>
-            Ready
-          </button>
+      {inDuel && !duel.state.ended && (
+        <>
+          <Board
+            state={duel.state}
+            sendReady={duel.sendReady}
+            sendBid={duel.sendBid}
+            sendPass={duel.sendPass}
+          />
           {duel.state.started && (
-            <p data-testid="game-started">
-              board={duel.state.boardSize} credits={duel.state.credits}
-            </p>
+            <Lineup
+              players={duel.state.lineup}
+              rosterSize={duel.state.rosterSize}
+            />
           )}
-          {duel.state.card && (
-            <p data-testid="card-flipped">
-              {duel.state.card.name} ({duel.state.card.season}{" "}
-              {duel.state.card.position})
-            </p>
-          )}
-          {duel.state.errors.length > 0 && (
-            <p data-testid="duel-errors">{duel.state.errors.join(" | ")}</p>
-          )}
-        </section>
+        </>
+      )}
+
+      {inDuel && duel.state.ended && (
+        <Results ended={duel.state.ended} rosterSize={duel.state.rosterSize} />
       )}
     </main>
   );

@@ -26,11 +26,7 @@ try {
   await p2.getByTestId("match-id").waitFor({ timeout: 10000 });
   const m1 = await p1.getByTestId("match-id").textContent();
   const m2 = await p2.getByTestId("match-id").textContent();
-  const s1 = await p1.getByTestId("status").textContent();
-  const s2 = await p2.getByTestId("status").textContent();
   if (!m1 || m1 !== m2) throw new Error(`ranked match ids differ: ${m1} vs ${m2}`);
-  if (s1 !== "matched" || s2 !== "matched")
-    throw new Error(`bad statuses: ${s1}, ${s2}`);
   console.log(`RANKED OK match=${m1.slice(0, 8)}`);
 
   // ── Challenge: creator gets a code, joiner enters it
@@ -46,9 +42,7 @@ try {
   await p4.getByTestId("join-challenge").click();
   await p4.getByTestId("match-id").waitFor({ timeout: 10000 });
   const jMatch = await p4.getByTestId("match-id").textContent();
-  const jStatus = await p4.getByTestId("status").textContent();
   if (jMatch !== cMatch) throw new Error(`challenge ids differ: ${cMatch} vs ${jMatch}`);
-  if (jStatus !== "matched") throw new Error(`joiner status: ${jStatus}`);
   console.log(`CHALLENGE OK match=${jMatch.slice(0, 8)}`);
 
   console.log("GATE PASS");
