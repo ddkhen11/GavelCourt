@@ -1,0 +1,11 @@
+{
+  "name": "duel-protos",
+  "version": "0.0.0",
+  "description": "Generated grpc-web stubs for duel.proto — regenerate with scripts/gen_proto.sh, never edit by hand",
+  "main": "duel_pb.js",
+  "types": "duel_pb.d.ts",
+  "dependencies": {
+    "google-protobuf": "^3.21.0",
+    "grpc-web": "^1.5.0"
+  }
+}

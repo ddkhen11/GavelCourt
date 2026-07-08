@@ -16,11 +16,13 @@ python -m grpc_tools.protoc \
   --proto_path=proto/ \
   proto/duel.proto
 
-# Frontend (TypeScript via protoc-gen-grpc-web)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Frontend (protoc-gen-grpc-web). commonjs+dts (not import_style=typescript):
+# Vite cannot serve source-tree CommonJS, so the generated files live in the
+# local package client/protos ("duel-protos") and are prebundled as a dep
+# (vite.config optimizeDeps.include handles the CJS -> ESM interop).
 protoc \
   --plugin=protoc-gen-grpc-web="${SCRIPT_DIR}/protoc-gen-grpc-web" \
-  --js_out=import_style=commonjs:client/src/grpc \
-  --grpc-web_out=import_style=typescript,mode=grpcwebtext:client/src/grpc \
+  --js_out=import_style=commonjs:client/protos \
+  --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:client/protos \
   --proto_path=proto/ \
   proto/duel.proto
