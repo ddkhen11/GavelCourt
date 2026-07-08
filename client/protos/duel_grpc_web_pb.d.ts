@@ -41,6 +41,13 @@ export class DuelServiceClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<duel_pb.GameEvent>;
 
+  getLeaderboard(
+    request: duel_pb.GetLeaderboardRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: duel_pb.GetLeaderboardResponse) => void
+  ): grpcWeb.ClientReadableStream<duel_pb.GetLeaderboardResponse>;
+
 }
 
 export class DuelServicePromiseClient {
@@ -72,6 +79,11 @@ export class DuelServicePromiseClient {
     request: duel_pb.WatchMatchRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<duel_pb.GameEvent>;
+
+  getLeaderboard(
+    request: duel_pb.GetLeaderboardRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<duel_pb.GetLeaderboardResponse>;
 
 }
 

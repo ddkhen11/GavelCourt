@@ -64,6 +64,11 @@ class DuelServiceStub:
                 request_serializer=duel__pb2.WatchMatchRequest.SerializeToString,
                 response_deserializer=duel__pb2.GameEvent.FromString,
                 _registered_method=True)
+        self.GetLeaderboard = channel.unary_unary(
+                '/duel.v1.DuelService/GetLeaderboard',
+                request_serializer=duel__pb2.GetLeaderboardRequest.SerializeToString,
+                response_deserializer=duel__pb2.GetLeaderboardResponse.FromString,
+                _registered_method=True)
 
 
 class DuelServiceServicer:
@@ -110,6 +115,13 @@ class DuelServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetLeaderboard(self, request, context):
+        """Unary — leaderboard (players ranked by elo)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DuelServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -142,6 +154,11 @@ def add_DuelServiceServicer_to_server(servicer, server):
                     servicer.WatchMatch,
                     request_deserializer=duel__pb2.WatchMatchRequest.FromString,
                     response_serializer=duel__pb2.GameEvent.SerializeToString,
+            ),
+            'GetLeaderboard': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetLeaderboard,
+                    request_deserializer=duel__pb2.GetLeaderboardRequest.FromString,
+                    response_serializer=duel__pb2.GetLeaderboardResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -306,6 +323,33 @@ class DuelService:
             '/duel.v1.DuelService/WatchMatch',
             duel__pb2.WatchMatchRequest.SerializeToString,
             duel__pb2.GameEvent.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetLeaderboard(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/duel.v1.DuelService/GetLeaderboard',
+            duel__pb2.GetLeaderboardRequest.SerializeToString,
+            duel__pb2.GetLeaderboardResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -66,6 +66,21 @@ class TestRecordMatch(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await self._player_row("pb"), {"elo": 997, "wins": 0, "losses": 0})
         self.assertIsNone((await self._match_row("m1"))["winner_id"])
 
+    async def test_leaderboard_ranked_by_elo(self):
+        await database.register_player("pc", "carol", "tok-c")
+        for pid, delta in (("pa", 40), ("pb", -10)):  # pa 1040, pb 990, pc 1000
+            await database.get_db().execute(
+                "UPDATE players SET elo=elo+? WHERE player_id=?", (delta, pid)
+            )
+        rows = await database.get_leaderboard(limit=10)
+        self.assertEqual(
+            [(r["username"], r["elo"]) for r in rows],
+            [("alice", 1040), ("carol", 1000), ("bob", 990)],
+        )
+        top = await database.get_leaderboard(limit=2)
+        self.assertEqual(len(top), 2)
+        self.assertEqual(top[0]["username"], "alice")
+
     async def test_forfeit_winner_can_have_lower_score(self):
         # Disconnect = forfeit: the winner is decided by finalize_game, not by
         # comparing scores — here pb forfeited while ahead on points.

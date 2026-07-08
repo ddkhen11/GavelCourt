@@ -18,6 +18,26 @@ service DuelService {
 
   // Server streaming — spectators (neutral view)
   rpc WatchMatch(WatchMatchRequest)    returns (stream GameEvent);
+
+  // Unary — leaderboard (players ranked by elo)
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+}
+
+// ── Leaderboard ────────────────────────────────────────
+
+message GetLeaderboardRequest {
+  uint32 limit = 1;   // 0 -> server default
+}
+
+message LeaderboardEntry {
+  string username = 1;
+  int32  elo      = 2;
+  uint32 wins     = 3;
+  uint32 losses   = 4;
+}
+
+message GetLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;  // ordered by elo descending
 }
 
 // ── Registration ───────────────────────────────────────

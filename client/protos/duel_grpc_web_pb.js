@@ -375,5 +375,66 @@ proto.duel.v1.DuelServicePromiseClient.prototype.watchMatch =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.duel.v1.GetLeaderboardRequest,
+ *   !proto.duel.v1.GetLeaderboardResponse>}
+ */
+const methodDescriptor_DuelService_GetLeaderboard = new grpc.web.MethodDescriptor(
+  '/duel.v1.DuelService/GetLeaderboard',
+  grpc.web.MethodType.UNARY,
+  proto.duel.v1.GetLeaderboardRequest,
+  proto.duel.v1.GetLeaderboardResponse,
+  /**
+   * @param {!proto.duel.v1.GetLeaderboardRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.duel.v1.GetLeaderboardResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.duel.v1.GetLeaderboardRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.duel.v1.GetLeaderboardResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.duel.v1.GetLeaderboardResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.duel.v1.DuelServiceClient.prototype.getLeaderboard =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/duel.v1.DuelService/GetLeaderboard',
+      request,
+      metadata || {},
+      methodDescriptor_DuelService_GetLeaderboard,
+      callback);
+};
+
+
+/**
+ * @param {!proto.duel.v1.GetLeaderboardRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.duel.v1.GetLeaderboardResponse>}
+ *     Promise that resolves to the response
+ */
+proto.duel.v1.DuelServicePromiseClient.prototype.getLeaderboard =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/duel.v1.DuelService/GetLeaderboard',
+      request,
+      metadata || {},
+      methodDescriptor_DuelService_GetLeaderboard);
+};
+
+
 module.exports = proto.duel.v1;
 

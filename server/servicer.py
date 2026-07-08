@@ -51,6 +51,23 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
             status=pb.MATCH_STATUS_READY,
         )
 
+    # ── Leaderboard ─────────────────────────────────────────────────────────
+
+    async def GetLeaderboard(self, request, context):
+        limit = request.limit or 20
+        rows = await database.get_leaderboard(limit)
+        return pb.GetLeaderboardResponse(
+            entries=[
+                pb.LeaderboardEntry(
+                    username=r["username"],
+                    elo=r["elo"],
+                    wins=r["wins"],
+                    losses=r["losses"],
+                )
+                for r in rows
+            ]
+        )
+
     # ── Bidi streaming ─────────────────────────────────────────────────────
 
     async def StreamDuel(self, request_iterator, context):

@@ -102,6 +102,15 @@ async def get_player_elo(player_id: str) -> int:
         return row["elo"] if row else 1000
 
 
+async def get_leaderboard(limit: int = 20) -> list[dict]:
+    """Players ranked by elo descending."""
+    async with get_db().execute(
+        "SELECT username, elo, wins, losses FROM players ORDER BY elo DESC LIMIT ?",
+        (limit,),
+    ) as cur:
+        return [dict(row) for row in await cur.fetchall()]
+
+
 async def record_match(
     session, scores: dict, elo_changes: dict, winner_id: str | None
 ) -> None:

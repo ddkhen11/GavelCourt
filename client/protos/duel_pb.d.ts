@@ -2,6 +2,74 @@ import * as jspb from 'google-protobuf'
 
 
 
+export class GetLeaderboardRequest extends jspb.Message {
+  getLimit(): number;
+  setLimit(value: number): GetLeaderboardRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetLeaderboardRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetLeaderboardRequest): GetLeaderboardRequest.AsObject;
+  static serializeBinaryToWriter(message: GetLeaderboardRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetLeaderboardRequest;
+  static deserializeBinaryFromReader(message: GetLeaderboardRequest, reader: jspb.BinaryReader): GetLeaderboardRequest;
+}
+
+export namespace GetLeaderboardRequest {
+  export type AsObject = {
+    limit: number,
+  }
+}
+
+export class LeaderboardEntry extends jspb.Message {
+  getUsername(): string;
+  setUsername(value: string): LeaderboardEntry;
+
+  getElo(): number;
+  setElo(value: number): LeaderboardEntry;
+
+  getWins(): number;
+  setWins(value: number): LeaderboardEntry;
+
+  getLosses(): number;
+  setLosses(value: number): LeaderboardEntry;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): LeaderboardEntry.AsObject;
+  static toObject(includeInstance: boolean, msg: LeaderboardEntry): LeaderboardEntry.AsObject;
+  static serializeBinaryToWriter(message: LeaderboardEntry, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LeaderboardEntry;
+  static deserializeBinaryFromReader(message: LeaderboardEntry, reader: jspb.BinaryReader): LeaderboardEntry;
+}
+
+export namespace LeaderboardEntry {
+  export type AsObject = {
+    username: string,
+    elo: number,
+    wins: number,
+    losses: number,
+  }
+}
+
+export class GetLeaderboardResponse extends jspb.Message {
+  getEntriesList(): Array<LeaderboardEntry>;
+  setEntriesList(value: Array<LeaderboardEntry>): GetLeaderboardResponse;
+  clearEntriesList(): GetLeaderboardResponse;
+  addEntries(value?: LeaderboardEntry, index?: number): LeaderboardEntry;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetLeaderboardResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetLeaderboardResponse): GetLeaderboardResponse.AsObject;
+  static serializeBinaryToWriter(message: GetLeaderboardResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetLeaderboardResponse;
+  static deserializeBinaryFromReader(message: GetLeaderboardResponse, reader: jspb.BinaryReader): GetLeaderboardResponse;
+}
+
+export namespace GetLeaderboardResponse {
+  export type AsObject = {
+    entriesList: Array<LeaderboardEntry.AsObject>,
+  }
+}
+
 export class RegisterPlayerRequest extends jspb.Message {
   getUsername(): string;
   setUsername(value: string): RegisterPlayerRequest;

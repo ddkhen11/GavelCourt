@@ -42,6 +42,8 @@ class DuelServiceStub:
     """Bidi streaming — one stream per player, open for the entire match"""
     WatchMatch: _grpc.UnaryStreamMultiCallable[_duel_pb2.WatchMatchRequest, _duel_pb2.GameEvent]
     """Server streaming — spectators (neutral view)"""
+    GetLeaderboard: _grpc.UnaryUnaryMultiCallable[_duel_pb2.GetLeaderboardRequest, _duel_pb2.GetLeaderboardResponse]
+    """Unary — leaderboard (players ranked by elo)"""
 
 @_typing.type_check_only
 class DuelServiceAsyncStub(DuelServiceStub):
@@ -57,6 +59,8 @@ class DuelServiceAsyncStub(DuelServiceStub):
     """Bidi streaming — one stream per player, open for the entire match"""
     WatchMatch: _aio.UnaryStreamMultiCallable[_duel_pb2.WatchMatchRequest, _duel_pb2.GameEvent]  # type: ignore[assignment]
     """Server streaming — spectators (neutral view)"""
+    GetLeaderboard: _aio.UnaryUnaryMultiCallable[_duel_pb2.GetLeaderboardRequest, _duel_pb2.GetLeaderboardResponse]  # type: ignore[assignment]
+    """Unary — leaderboard (players ranked by elo)"""
 
 class DuelServiceServicer(metaclass=_abc_1.ABCMeta):
     @_abc_1.abstractmethod
@@ -105,5 +109,13 @@ class DuelServiceServicer(metaclass=_abc_1.ABCMeta):
         context: _ServicerContext,
     ) -> _typing.Union[_abc.Iterator[_duel_pb2.GameEvent], _abc.AsyncIterator[_duel_pb2.GameEvent]]:
         """Server streaming — spectators (neutral view)"""
+
+    @_abc_1.abstractmethod
+    def GetLeaderboard(
+        self,
+        request: _duel_pb2.GetLeaderboardRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_duel_pb2.GetLeaderboardResponse, _abc.Awaitable[_duel_pb2.GetLeaderboardResponse]]:
+        """Unary — leaderboard (players ranked by elo)"""
 
 def add_DuelServiceServicer_to_server(servicer: DuelServiceServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...

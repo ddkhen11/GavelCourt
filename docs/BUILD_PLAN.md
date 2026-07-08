@@ -60,10 +60,10 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] `useMatch` (Find Ranked Match + challenge code) — _gate: registers + matches against live server_
 - [x] `useDuel` (bidi stream mgmt) — _gate: receives GameStarted/CardFlipped events_
 - [x] `Lobby`, `Board`, `Lineup`, `Results` components — _gate: render with live events_
-- [ ] 🚦 **Full visual playthrough** (server + grpcwebproxy + client, two browsers) — _gate: **human** plays a match start→finish in the browser_
+- [x] 🚦 **Full visual playthrough** (server + grpcwebproxy + client, two browsers) — _gate: **human** plays a match start→finish in the browser_
 
 ## Phase 7 — Leaderboard + hardening
-- [ ] Leaderboard query (players by elo) + simple view — _gate: returns ranked list_
+- [x] Leaderboard query (players by elo) + simple view — _gate: returns ranked list_
 - [ ] 🚦 `/code-review` high on the full diff — _gate: findings triaged_
 - [ ] 🚦 `/security-review` (auth tokens, bid validation) — _gate: no open high-severity findings_
 - [ ] `README.md`: setup + dev commands — _gate: a fresh clone can follow it to a running app_

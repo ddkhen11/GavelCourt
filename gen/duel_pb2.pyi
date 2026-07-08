@@ -98,6 +98,78 @@ GAME_RESULT_TIE: GameResult.ValueType  # 3
 Global___GameResult: _TypeAlias = GameResult  # noqa: Y015
 
 @_typing.final
+class GetLeaderboardRequest(_message.Message):
+    """── Leaderboard ────────────────────────────────────────"""
+
+    DESCRIPTOR: _descriptor.Descriptor
+
+    LIMIT_FIELD_NUMBER: _builtins.int
+    limit: _builtins.int
+    """0 -> server default"""
+    def __init__(
+        self,
+        *,
+        limit: _builtins.int = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["limit", b"limit"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___GetLeaderboardRequest: _TypeAlias = GetLeaderboardRequest  # noqa: Y015
+
+@_typing.final
+class LeaderboardEntry(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERNAME_FIELD_NUMBER: _builtins.int
+    ELO_FIELD_NUMBER: _builtins.int
+    WINS_FIELD_NUMBER: _builtins.int
+    LOSSES_FIELD_NUMBER: _builtins.int
+    username: _builtins.str
+    elo: _builtins.int
+    wins: _builtins.int
+    losses: _builtins.int
+    def __init__(
+        self,
+        *,
+        username: _builtins.str = ...,
+        elo: _builtins.int = ...,
+        wins: _builtins.int = ...,
+        losses: _builtins.int = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["elo", b"elo", "losses", b"losses", "username", b"username", "wins", b"wins"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___LeaderboardEntry: _TypeAlias = LeaderboardEntry  # noqa: Y015
+
+@_typing.final
+class GetLeaderboardResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENTRIES_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def entries(self) -> _containers.RepeatedCompositeFieldContainer[Global___LeaderboardEntry]:
+        """ordered by elo descending"""
+
+    def __init__(
+        self,
+        *,
+        entries: _abc.Iterable[Global___LeaderboardEntry] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["entries", b"entries"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___GetLeaderboardResponse: _TypeAlias = GetLeaderboardResponse  # noqa: Y015
+
+@_typing.final
 class RegisterPlayerRequest(_message.Message):
     """── Registration ───────────────────────────────────────"""
 

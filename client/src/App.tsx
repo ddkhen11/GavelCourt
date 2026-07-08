@@ -1,6 +1,7 @@
 import { useMatch } from "./hooks/useMatch";
 import { useDuel } from "./hooks/useDuel";
 import Lobby from "./components/Lobby";
+import Leaderboard from "./components/Leaderboard";
 import Board from "./components/Board";
 import Lineup from "./components/Lineup";
 import Results from "./components/Results";
@@ -15,7 +16,12 @@ export default function App() {
     <main>
       <h1>NBA Auction Draft</h1>
 
-      {!inDuel && <Lobby match={match} />}
+      {!inDuel && (
+        <>
+          <Lobby match={match} />
+          <Leaderboard />
+        </>
+      )}
 
       {inDuel && match.matchId && (
         <p data-testid="match-id">{match.matchId}</p>
