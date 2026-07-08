@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@improbable-eng/grpc-web": "^0.15.0",
     "duel-protos": "file:protos",
     "google-protobuf": "^3.21.0",
     "grpc-web": "^1.5.0",

@@ -15,7 +15,7 @@ Python 3.11 + `grpcio.aio` + `aiosqlite`; React/Vite + grpc-web. Proto in `proto
 ## Dev commands
 ```
 python server/main.py                                   # gRPC :50051
-grpcwebproxy --backend_addr=localhost:50051 --run_tls_server=false --allow_all_origins  # :8080
+grpcwebproxy --backend_addr=localhost:50051 --run_tls_server=false --allow_all_origins --use_websockets  # :8080
 cd client && npm run dev                                 # React :3000 (pinned in vite.config)
 ```
 Client talks to :8080, never :50051.

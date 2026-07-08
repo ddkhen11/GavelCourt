@@ -58,7 +58,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 - [x] Vite + React scaffold, port 3000, deps installed — _gate: `npm run dev` serves :3000_
 - [x] grpc-web codegen into `client/src/grpc` — _gate: stubs import in TS_
 - [x] `useMatch` (Find Ranked Match + challenge code) — _gate: registers + matches against live server_
-- [ ] `useDuel` (bidi stream mgmt) — _gate: receives GameStarted/CardFlipped events_
+- [x] `useDuel` (bidi stream mgmt) — _gate: receives GameStarted/CardFlipped events_
 - [ ] `Lobby`, `Board`, `Lineup`, `Results` components — _gate: render with live events_
 - [ ] 🚦 **Full visual playthrough** (server + grpcwebproxy + client, two browsers) — _gate: **human** plays a match start→finish in the browser_
 
