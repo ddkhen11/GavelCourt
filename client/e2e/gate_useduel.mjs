@@ -1,28 +1,11 @@
 import { chromium } from "playwright";
-
-const APP = "http://localhost:3000";
-
-async function newPlayer(browser, name) {
-  const ctx = await browser.newContext();
-  const page = await ctx.newPage();
-  page.on("pageerror", (e) => console.log(`[${name}] pageerror: ${e}`));
-  await page.goto(APP);
-  await page.getByTestId("username").fill(name);
-  await page.getByTestId("register").click();
-  await page.getByTestId("identity").waitFor({ timeout: 10000 });
-  return page;
-}
+import { newPlayer, pairRanked } from "./helpers.mjs";
 
 const browser = await chromium.launch();
 try {
   const p1 = await newPlayer(browser, `duel_a_${Date.now()}`);
   const p2 = await newPlayer(browser, `duel_b_${Date.now()}`);
-
-  await p1.getByTestId("find-ranked").click();
-  await p1.waitForTimeout(300);
-  await p2.getByTestId("find-ranked").click();
-  await p1.getByTestId("match-id").waitFor({ timeout: 10000 });
-  await p2.getByTestId("match-id").waitFor({ timeout: 10000 });
+  await pairRanked(p1, p2);
   console.log("matched");
 
   for (const [name, p] of [["p1", p1], ["p2", p2]]) {

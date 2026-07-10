@@ -1,33 +1,13 @@
 import { chromium } from "playwright";
-
-const APP = "http://localhost:3000";
-
-async function newPlayer(browser, name) {
-  const ctx = await browser.newContext();
-  const page = await ctx.newPage();
-  page.on("pageerror", (e) => console.log(`[${name}] pageerror: ${e}`));
-  await page.goto(APP);
-  await page.getByTestId("username").fill(name);
-  await page.getByTestId("register").click();
-  await page.getByTestId("identity").waitFor({ timeout: 10000 });
-  console.log(`[${name}] registered`);
-  return page;
-}
+import { newPlayer, pairRanked } from "./helpers.mjs";
 
 const browser = await chromium.launch();
 try {
   // ── Ranked: two players click Find Ranked Match, must pair on one match id
   const p1 = await newPlayer(browser, "pw_alice");
   const p2 = await newPlayer(browser, "pw_bob");
-  await p1.getByTestId("find-ranked").click();
-  await p1.waitForTimeout(300); // p1 parks in the queue first
-  await p2.getByTestId("find-ranked").click();
-  await p1.getByTestId("match-id").waitFor({ timeout: 10000 });
-  await p2.getByTestId("match-id").waitFor({ timeout: 10000 });
-  const m1 = await p1.getByTestId("match-id").textContent();
-  const m2 = await p2.getByTestId("match-id").textContent();
-  if (!m1 || m1 !== m2) throw new Error(`ranked match ids differ: ${m1} vs ${m2}`);
-  console.log(`RANKED OK match=${m1.slice(0, 8)}`);
+  const matchId = await pairRanked(p1, p2);
+  console.log(`RANKED OK match=${matchId.slice(0, 8)}`);
 
   // ── Challenge: creator gets a code, joiner enters it
   const p3 = await newPlayer(browser, "pw_carol");

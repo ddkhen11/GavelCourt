@@ -1,17 +1,5 @@
 import { chromium } from "playwright";
-
-const APP = "http://localhost:3000";
-
-async function newPlayer(browser, name) {
-  const ctx = await browser.newContext();
-  const page = await ctx.newPage();
-  page.on("pageerror", (e) => console.log(`[${name}] pageerror: ${e}`));
-  await page.goto(APP);
-  await page.getByTestId("username").fill(name);
-  await page.getByTestId("register").click();
-  await page.getByTestId("identity").waitFor({ timeout: 10000 });
-  return page;
-}
+import { newPlayer, pairRanked } from "./helpers.mjs";
 
 // Deterministic auto-play through the real UI: fixed bid each window.
 // p1 bids 2, p2 bids 1 -> p1 drafts the first five, then p2 fills
@@ -48,11 +36,7 @@ try {
   const p2 = await newPlayer(browser, `cmp_b_${Date.now()}`);
 
   // Lobby renders + ranked match
-  await p1.getByTestId("find-ranked").click();
-  await p1.waitForTimeout(300);
-  await p2.getByTestId("find-ranked").click();
-  await p1.getByTestId("match-id").waitFor({ timeout: 10000 });
-  await p2.getByTestId("match-id").waitFor({ timeout: 10000 });
+  await pairRanked(p1, p2);
   console.log("lobby + matchmaking OK");
 
   // Board renders pre-game, both ready up
@@ -94,6 +78,11 @@ try {
     (outcomes.has("You win!") && outcomes.has("You lose")) ||
     (r1 === "Tie" && r2 === "Tie");
   if (!validSplit) throw new Error(`inconsistent results: ${r1} / ${r2}`);
+
+  // Back to lobby: Results must not be a dead end
+  await p1.getByTestId("play-again").click();
+  await p1.getByTestId("find-ranked").waitFor({ timeout: 10000 });
+  console.log("play-again returns to lobby");
 
   console.log("GATE PASS");
 } finally {
