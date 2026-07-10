@@ -11,3 +11,5 @@ BOARD_FILL_WEIGHTS = {"S": 0.08, "A": 0.22, "B": 0.42, "C": 0.28}
 ELO_K = 32
 STARTING_ELO = 1000
 PENDING_CHALLENGE_TTL_SECONDS = 3600  # unjoined challenges expire after an hour
+LEADERBOARD_DEFAULT_LIMIT = 20  # rows returned when the client sends limit=0
+LEADERBOARD_MAX_LIMIT = 100  # hard cap on client-supplied limits

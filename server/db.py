@@ -95,7 +95,7 @@ async def get_player_elo(player_id: str) -> int:
         return row["elo"] if row else STARTING_ELO
 
 
-async def get_leaderboard(limit: int = 20) -> list[dict]:
+async def get_leaderboard(limit: int) -> list[dict]:
     """Players ranked by elo descending."""
     async with get_db().execute(
         "SELECT username, elo, wins, losses FROM players ORDER BY elo DESC LIMIT ?",

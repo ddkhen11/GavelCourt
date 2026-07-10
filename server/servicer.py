@@ -10,6 +10,7 @@ import duel_pb2 as pb
 import duel_pb2_grpc as pb_grpc
 
 from session import Phase
+from constants import LEADERBOARD_DEFAULT_LIMIT, LEADERBOARD_MAX_LIMIT
 import db as database
 import matchmaking
 from game_loop import game_loop, send, wrap
@@ -84,7 +85,7 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
     # ── Leaderboard ─────────────────────────────────────────────────────────
 
     async def GetLeaderboard(self, request, context):
-        limit = request.limit or 20
+        limit = min(request.limit or LEADERBOARD_DEFAULT_LIMIT, LEADERBOARD_MAX_LIMIT)
         rows = await database.get_leaderboard(limit)
         return pb.GetLeaderboardResponse(
             entries=[
