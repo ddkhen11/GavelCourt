@@ -1,7 +1,9 @@
 import asyncio
+import time
 import uuid
 from session import GameSession, PlayerState
 from board import BoardBuilder
+from constants import PENDING_CHALLENGE_TTL_SECONDS
 
 _sessions_by_match: dict[str, GameSession] = {}
 _session_by_player: dict[
@@ -32,6 +34,18 @@ def get_session_by_match(match_id: str) -> GameSession:
     return s
 
 
+def remove_session(match_id: str) -> None:
+    """Drop a finished/abandoned session from all registries so it can be GC'd
+    and so post-match StreamDuel lookups fail fast instead of hanging."""
+    session = _sessions_by_match.pop(match_id, None)
+    if session is None:
+        return
+    for pid in session.players:
+        if _session_by_player.get(pid) is session:
+            del _session_by_player[pid]
+    _pending_challenge.pop(match_id, None)
+
+
 def _build_and_register_session(player_a_id: str, player_b_id: str) -> GameSession:
     match_id = str(uuid.uuid4())
     board, pity_pool = BoardBuilder().build(_tier_pools)
@@ -57,8 +71,18 @@ _pending_challenge: dict[
 ] = {}  # match_id -> {"creator_id", "join_code", "session"}
 
 
+def _prune_pending_challenges() -> None:
+    """Expire abandoned challenges so their placeholder sessions don't leak."""
+    cutoff = time.monotonic() - PENDING_CHALLENGE_TTL_SECONDS
+    for match_id in [
+        m for m, p in _pending_challenge.items() if p["created_at"] < cutoff
+    ]:
+        remove_session(match_id)
+
+
 def create_challenge_match(player_id: str) -> tuple[str, str]:
     """Create a challenge session (board not built yet). Returns (match_id, join_code)."""
+    _prune_pending_challenges()
     match_id = str(uuid.uuid4())
     join_code = str(uuid.uuid4())[:6].upper()
     # Placeholder session — board built when second player joins
@@ -69,17 +93,21 @@ def create_challenge_match(player_id: str) -> tuple[str, str]:
     _pending_challenge[match_id] = {
         "creator_id": player_id,
         "join_code": join_code,
+        "created_at": time.monotonic(),
     }
     return match_id, join_code
 
 
 def join_challenge_match(match_id: str, player_id: str, join_code: str) -> GameSession:
     """Validate join code, add second player, build the board. Returns the session."""
+    _prune_pending_challenges()
     pending = _pending_challenge.get(match_id)
     if pending is None:
         raise ValueError("match not found")
     if pending["join_code"] != join_code:
         raise ValueError("invalid join code")
+    if player_id == pending["creator_id"]:
+        raise ValueError("cannot join your own match")
 
     session = _sessions_by_match[match_id]
     del _pending_challenge[match_id]
@@ -98,14 +126,26 @@ def join_challenge_match(match_id: str, player_id: str, join_code: str) -> GameS
 async def find_ranked_match(player_id: str) -> str:
     """Park until paired; returns match_id once paired."""
     global _ranked_waiter
+    # A waiter whose RPC has since died (cancelled future) must not poison
+    # the queue for the next caller.
+    if _ranked_waiter is not None and _ranked_waiter["future"].done():
+        _ranked_waiter = None
     if _ranked_waiter is None:
         fut: asyncio.Future = asyncio.get_event_loop().create_future()
-        _ranked_waiter = {"player_id": player_id, "future": fut}
-        match_id: str = await fut
-        return match_id
-    else:
-        opp = _ranked_waiter
-        _ranked_waiter = None
-        session = _build_and_register_session(opp["player_id"], player_id)
-        opp["future"].set_result(session.match_id)
-        return session.match_id
+        waiter = {"player_id": player_id, "future": fut}
+        _ranked_waiter = waiter
+        try:
+            match_id: str = await fut
+            return match_id
+        finally:
+            # Cancelled while parked (player closed the tab mid-search):
+            # clear the slot so the next caller doesn't pair with a ghost.
+            if _ranked_waiter is waiter:
+                _ranked_waiter = None
+    if _ranked_waiter["player_id"] == player_id:
+        raise ValueError("already searching for a ranked match")
+    opp = _ranked_waiter
+    _ranked_waiter = None
+    session = _build_and_register_session(opp["player_id"], player_id)
+    opp["future"].set_result(session.match_id)
+    return session.match_id
