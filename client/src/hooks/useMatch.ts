@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { DuelServicePromiseClient } from "duel-protos/duel_grpc_web_pb";
 import {
   CreateMatchRequest,
   FindRankedMatchRequest,
@@ -7,11 +6,7 @@ import {
   MatchMode,
   RegisterPlayerRequest,
 } from "duel-protos";
-
-// The client always talks to grpcwebproxy on :8080, never :50051 directly.
-export const PROXY_URL = "http://localhost:8080";
-
-const client = new DuelServicePromiseClient(PROXY_URL);
+import { duelClient as client } from "../grpc/client";
 
 const STORAGE_KEY = "duel.identity";
 
@@ -128,6 +123,14 @@ export function useMatch() {
     [identity],
   );
 
+  // Back to the lobby after a match (identity is kept).
+  const reset = useCallback(() => {
+    setMatchId(null);
+    setJoinCode(null);
+    setStatus("idle");
+    setError(null);
+  }, []);
+
   return {
     identity,
     status,
@@ -138,5 +141,6 @@ export function useMatch() {
     findRankedMatch,
     createChallenge,
     joinChallenge,
+    reset,
   };
 }
