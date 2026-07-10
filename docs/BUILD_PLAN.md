@@ -64,7 +64,7 @@ Run it self-paced (no interval). Recommended model for the loop: **Sonnet**; swi
 
 ## Phase 7 — Leaderboard + hardening
 - [x] Leaderboard query (players by elo) + simple view — _gate: returns ranked list_
-- [ ] 🚦 `/code-review` high on the full diff — _gate: findings triaged_
+- [x] 🚦 `/code-review` high on the full diff — _gate: findings triaged_
 - [ ] 🚦 `/security-review` (auth tokens, bid validation) — _gate: no open high-severity findings_
 - [ ] `README.md`: setup + dev commands — _gate: a fresh clone can follow it to a running app_
 
