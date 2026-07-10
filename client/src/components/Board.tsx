@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
+import { CardTier } from "duel-protos";
 import type { DuelState } from "../hooks/useDuel";
 
-const TIER_NAMES: Record<number, string> = { 1: "S", 2: "A", 3: "B", 4: "C" };
+// Keyed off the generated enum so a proto renumber can't silently skew these.
+const TIER_NAMES: Record<number, string> = {
+  [CardTier.CARD_TIER_S]: "S",
+  [CardTier.CARD_TIER_A]: "A",
+  [CardTier.CARD_TIER_B]: "B",
+  [CardTier.CARD_TIER_C]: "C",
+};
 
 interface BoardProps {
   state: DuelState;
@@ -13,6 +20,15 @@ interface BoardProps {
 export default function Board({ state, sendReady, sendBid, sendPass }: BoardProps) {
   const [amount, setAmount] = useState("");
   const bidding = state.bidWindow !== null;
+
+  // uint32 on the wire: a fractional/negative/oversized amount would make the
+  // protobuf serializer throw inside send(), so gate the button on validity.
+  const parsedBid = Number(amount);
+  const bidValid =
+    amount !== "" &&
+    Number.isInteger(parsedBid) &&
+    parsedBid >= 0 &&
+    (state.bidWindow === null || parsedBid <= state.bidWindow.maxBid);
 
   // Clear the bid box whenever a new window opens.
   useEffect(() => {
@@ -78,8 +94,8 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
           />
           <button
             data-testid="place-bid"
-            disabled={amount === ""}
-            onClick={() => sendBid(Number(amount))}
+            disabled={!bidValid}
+            onClick={() => sendBid(parsedBid)}
           >
             Bid
           </button>

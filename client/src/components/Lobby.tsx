@@ -63,12 +63,6 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
               Join Challenge
             </button>
           </div>
-          {match.status === "waiting" && match.joinCode && (
-            <p>
-              Share match id <code data-testid="share-match-id">{match.matchId}</code>{" "}
-              and code <code data-testid="challenge-code">{match.joinCode}</code>
-            </p>
-          )}
         </div>
       )}
       <p data-testid="status">{match.status}</p>

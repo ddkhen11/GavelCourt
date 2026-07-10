@@ -1,18 +1,22 @@
+import { GameResult } from "duel-protos";
 import type { GameEnd } from "../hooks/useDuel";
 import Lineup from "./Lineup";
 
+// Keyed off the generated enum so a proto renumber can't silently skew these.
 const RESULT_NAMES: Record<number, string> = {
-  1: "You win!",
-  2: "You lose",
-  3: "Tie",
+  [GameResult.GAME_RESULT_WIN]: "You win!",
+  [GameResult.GAME_RESULT_LOSS]: "You lose",
+  [GameResult.GAME_RESULT_TIE]: "Tie",
 };
 
 export default function Results({
   ended,
   rosterSize,
+  onPlayAgain,
 }: {
   ended: GameEnd;
   rosterSize: number;
+  onPlayAgain: () => void;
 }) {
   return (
     <section data-testid="results">
@@ -36,6 +40,9 @@ export default function Results({
         title="Opponent lineup"
         testId="opp-lineup"
       />
+      <button data-testid="play-again" onClick={onPlayAgain}>
+        Back to lobby
+      </button>
     </section>
   );
 }

@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-import { DuelServicePromiseClient } from "duel-protos/duel_grpc_web_pb";
 import { GetLeaderboardRequest, LeaderboardEntry } from "duel-protos";
-import { PROXY_URL } from "../hooks/useMatch";
-
-const client = new DuelServicePromiseClient(PROXY_URL);
+import { duelClient as client } from "../grpc/client";
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry.AsObject[]>([]);
@@ -11,7 +8,7 @@ export default function Leaderboard() {
 
   useEffect(() => {
     const req = new GetLeaderboardRequest();
-    req.setLimit(20);
+    req.setLimit(0); // 0 -> server default
     client
       .getLeaderboard(req)
       .then((res) => setEntries(res.getEntriesList().map((e) => e.toObject())))
