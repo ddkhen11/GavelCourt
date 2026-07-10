@@ -13,6 +13,7 @@ Column mapping from server/data/nba_stats.db (raw_stats table) to player_seasons
 
 import aiosqlite
 from datetime import datetime, timezone
+from constants import STARTING_ELO
 
 _db: aiosqlite.Connection | None = None
 
@@ -22,7 +23,7 @@ async def init_db(path: str = "server/data/game.db") -> aiosqlite.Connection:
     _db = await aiosqlite.connect(path)
     _db.row_factory = aiosqlite.Row
     await _db.execute("PRAGMA journal_mode=WAL")
-    await _db.executescript("""
+    await _db.executescript(f"""
         CREATE TABLE IF NOT EXISTS player_seasons (
           player_id    TEXT PRIMARY KEY,
           player_name  TEXT NOT NULL,
@@ -41,7 +42,7 @@ async def init_db(path: str = "server/data/game.db") -> aiosqlite.Connection:
           player_id  TEXT PRIMARY KEY,
           username   TEXT NOT NULL,
           auth_token TEXT NOT NULL UNIQUE,
-          elo        INTEGER NOT NULL DEFAULT 1000,
+          elo        INTEGER NOT NULL DEFAULT {STARTING_ELO},
           wins       INTEGER NOT NULL DEFAULT 0,
           losses     INTEGER NOT NULL DEFAULT 0,
           created_at TEXT NOT NULL
@@ -58,6 +59,8 @@ async def init_db(path: str = "server/data/game.db") -> aiosqlite.Connection:
           player_b_elo_change INTEGER,
           completed_at        TEXT
         );
+
+        CREATE INDEX IF NOT EXISTS idx_players_elo ON players(elo DESC);
     """)
     await _db.commit()
     return _db
@@ -67,16 +70,6 @@ def get_db() -> aiosqlite.Connection:
     if _db is None:
         raise RuntimeError("Database not initialised — call init_db() first")
     return _db
-
-
-async def get_player_seasons_by_tier() -> dict[str, list[dict]]:
-    """Return all player_seasons rows grouped by tier."""
-    tiers: dict[str, list[dict]] = {"S": [], "A": [], "B": [], "C": []}
-    async with get_db().execute("SELECT * FROM player_seasons") as cur:
-        async for row in cur:
-            d = dict(row)
-            tiers.setdefault(d["tier"], []).append(d)
-    return tiers
 
 
 async def register_player(player_id: str, username: str, auth_token: str) -> None:
@@ -99,7 +92,7 @@ async def get_player_elo(player_id: str) -> int:
         "SELECT elo FROM players WHERE player_id=?", (player_id,)
     ) as cur:
         row = await cur.fetchone()
-        return row["elo"] if row else 1000
+        return row["elo"] if row else STARTING_ELO
 
 
 async def get_leaderboard(limit: int = 20) -> list[dict]:

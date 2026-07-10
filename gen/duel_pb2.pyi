@@ -827,7 +827,7 @@ class ErrorEvent(_message.Message):
     CODE_FIELD_NUMBER: _builtins.int
     MESSAGE_FIELD_NUMBER: _builtins.int
     code: _builtins.str
-    """BID_EXCEEDS_BALANCE | BID_EXCEEDS_MAX | INVALID_PHASE | ROSTER_FULL"""
+    """BID_EXCEEDS_MAX | INVALID_PHASE | ROSTER_FULL | INTERNAL"""
     message: _builtins.str
     def __init__(
         self,

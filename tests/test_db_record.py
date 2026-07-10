@@ -3,22 +3,15 @@
 Run:  .venv/bin/python -m unittest discover -s tests -v
 """
 
-import os
-import sys
 import unittest
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "server"))
+from factories import make_session
 
 import db as database
-from session import GameSession, PlayerState
 
 
-def make_session(match_id="m1", pids=("pa", "pb")):
-    s = GameSession(match_id=match_id)
-    for pid in pids:
-        s.players[pid] = PlayerState(player_id=pid)
-    return s
+def _session():
+    return make_session(pids=("pa", "pb"))
 
 
 class TestRecordMatch(unittest.IsolatedAsyncioTestCase):
@@ -45,7 +38,7 @@ class TestRecordMatch(unittest.IsolatedAsyncioTestCase):
             return dict(await cur.fetchone())
 
     async def test_win_updates_counters_and_matches_row(self):
-        s = make_session()
+        s = _session()
         await database.record_match(
             s, {"pa": 50.0, "pb": 40.0}, {"pa": 16, "pb": -16}, winner_id="pa"
         )
@@ -58,7 +51,7 @@ class TestRecordMatch(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(m["completed_at"])
 
     async def test_tie_updates_elo_but_not_counters(self):
-        s = make_session()
+        s = _session()
         await database.record_match(
             s, {"pa": 42.0, "pb": 42.0}, {"pa": 3, "pb": -3}, winner_id=None
         )
@@ -84,7 +77,7 @@ class TestRecordMatch(unittest.IsolatedAsyncioTestCase):
     async def test_forfeit_winner_can_have_lower_score(self):
         # Disconnect = forfeit: the winner is decided by finalize_game, not by
         # comparing scores — here pb forfeited while ahead on points.
-        s = make_session()
+        s = _session()
         await database.record_match(
             s, {"pa": 30.0, "pb": 55.0}, {"pa": 16, "pb": -16}, winner_id="pa"
         )

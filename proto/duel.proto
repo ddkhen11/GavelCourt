@@ -216,6 +216,6 @@ enum GameResult {
 }
 
 message ErrorEvent {
-  string code    = 1;  // BID_EXCEEDS_BALANCE | BID_EXCEEDS_MAX | INVALID_PHASE | ROSTER_FULL
+  string code    = 1;  // BID_EXCEEDS_MAX | INVALID_PHASE | ROSTER_FULL | INTERNAL
   string message = 2;
 }
