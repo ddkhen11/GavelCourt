@@ -21,3 +21,4 @@ dist/
 # OS / editor
 .DS_Store
 *.swp
+client/tsconfig.tsbuildinfo
