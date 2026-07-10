@@ -26,7 +26,7 @@ export default function App() {
       {inDuel && match.matchId && (
         <p data-testid="match-id">{match.matchId}</p>
       )}
-      {inDuel && match.status === "waiting" && match.joinCode && (
+      {inDuel && !duel.state.started && match.status === "waiting" && match.joinCode && (
         <p>
           Share match id <code>{match.matchId}</code> and code{" "}
           <code data-testid="challenge-code">{match.joinCode}</code>
