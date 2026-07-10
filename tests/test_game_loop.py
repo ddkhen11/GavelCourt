@@ -5,57 +5,20 @@ Run:  .venv/bin/python -m unittest discover -s tests -v
 """
 
 import asyncio
-import os
-import sys
 import types
 import unittest
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "server"))
-sys.path.insert(0, os.path.join(ROOT, "gen"))
-
-import duel_pb2 as pb
+from factories import (
+    bid_action,
+    make_card,
+    make_session,
+    pass_action,
+    pb,
+    ready_action,
+)
 
 import game_loop as gl
-from session import GameSession, PlayerSeason, PlayerState
 from constants import ROSTER_SIZE, STARTING_CREDITS
-
-
-def make_card(pid: str, tier: str = "B", score: float = 5.0) -> PlayerSeason:
-    return PlayerSeason(
-        player_id=pid,
-        player_name=pid,
-        season="1999",
-        team="TST",
-        position="PG",
-        laker_score=score,
-        rapm=1.0,
-        rapm_offense=0.5,
-        rapm_defense=0.5,
-        war=2.0,
-        tier=tier,
-    )
-
-
-def make_session(board, pity_pool, pids=("p1", "p2")) -> GameSession:
-    s = GameSession(match_id="m1", board=list(board), pity_pool=list(pity_pool))
-    for pid in pids:
-        s.players[pid] = PlayerState(player_id=pid)
-        s.action_queues[pid] = asyncio.Queue()
-        s.event_queues[pid] = asyncio.Queue()
-    return s
-
-
-def bid_action(amount: int) -> pb.PlayerAction:
-    return pb.PlayerAction(bid=pb.BidAction(amount=amount))
-
-
-def pass_action() -> pb.PlayerAction:
-    return pb.PlayerAction(**{"pass": pb.PassAction()})
-
-
-def ready_action() -> pb.PlayerAction:
-    return pb.PlayerAction(ready=pb.ReadyAction())
 
 
 class TestResolveAuction(unittest.TestCase):
@@ -246,12 +209,142 @@ class TestPityNoAdvance(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self._flipped_ids(ev1), ["b1", "b2", "b3"])
         self.assertEqual(sum(1 for e in ev1 if e.HasField("pity_triggered")), 0)
 
+    async def test_forced_pity_after_board_exhaustion(self):
+        # SPEC: the match runs until the board PLUS pity reserves are exhausted.
+        board = [make_card("b1")]
+        pity = [make_card("x1", tier="S", score=9.5), make_card("x2", tier="A", score=8.0)]
+        s = make_session(board, pity)
+        ev1, _ = await self._play(s, {
+            # windows: b1(pass) forced-pity(p1 bids 1) forced-pity(pass)
+            "p1": [pass_action(), bid_action(1), pass_action()],
+            "p2": [pass_action(), pass_action(), pass_action()],
+        })
+        flips = self._flipped_ids(ev1)
+        self.assertEqual(flips[0], "b1")
+        self.assertEqual(len(flips), 3)
+        self.assertEqual(sorted(flips[1:]), ["x1", "x2"])
+        self.assertEqual(sum(1 for e in ev1 if e.HasField("pity_triggered")), 2)
+        self.assertEqual(len(s.players["p1"].lineup), 1)
+        self.assertEqual(s.pity_pool, [])
+        self.assertTrue(ev1[-1].HasField("game_ended"))
+
     async def test_card_flipped_carries_no_stats(self):
         # Blind-board invariant: CardFlippedEvent has identity only (CardInfo has no
         # stat fields at the protocol level).
         info_fields = {f.name for f in pb.CardInfo.DESCRIPTOR.fields}
         self.assertEqual(
             info_fields, {"player_id", "player_name", "season", "team", "position"}
+        )
+
+
+class TestPlayerState(unittest.TestCase):
+    def test_full_roster_max_bid_is_zero(self):
+        from session import PlayerState
+
+        p = PlayerState(player_id="p", credits=46)
+        p.lineup = [make_card(f"c{i}") for i in range(ROSTER_SIZE)]
+        self.assertEqual(p.max_bid(), 0)
+
+
+class TestLifecycle(unittest.IsolatedAsyncioTestCase):
+    """Disconnect/forfeit paths: mid-match, pre-ready, and double-disconnect."""
+
+    def setUp(self):
+        self._real_db = gl.database
+        gl.database = _DbStub()
+        self._real_window = gl.BID_WINDOW_SECONDS
+        gl.BID_WINDOW_SECONDS = 0.3  # keep timeout-driven paths fast
+
+    def tearDown(self):
+        gl.database = self._real_db
+        gl.BID_WINDOW_SECONDS = self._real_window
+
+    @staticmethod
+    async def _read_until_end(session, pid, on_window=None):
+        events = []
+        while True:
+            ev = await session.event_queues[pid].get()
+            events.append(ev)
+            if ev.HasField("bid_window_open") and on_window is not None:
+                await on_window(len([e for e in events if e.HasField("bid_window_open")]))
+            if ev.HasField("game_ended"):
+                return events
+
+    async def test_mid_match_disconnect_forfeits_to_opponent(self):
+        s = make_session([make_card("b1"), make_card("b2"), make_card("b3")], [])
+        for pid in s.players:
+            await s.action_queues[pid].put(ready_action())
+
+        async def p1_windows(n):
+            if n == 1:
+                await s.action_queues["p1"].put(bid_action(2))
+
+        async def p2_windows(n):
+            s.players["p2"].disconnected = True  # tab closed; never bids again
+
+        _, ev1, ev2 = await asyncio.wait_for(
+            asyncio.gather(
+                gl.game_loop(s),
+                self._read_until_end(s, "p1", p1_windows),
+                self._read_until_end(s, "p2", p2_windows),
+            ),
+            timeout=5,
+        )
+        end1, end2 = ev1[-1].game_ended, ev2[-1].game_ended
+        self.assertTrue(end1.by_forfeit)
+        self.assertEqual(end1.result, pb.GAME_RESULT_WIN)
+        self.assertEqual(end2.result, pb.GAME_RESULT_LOSS)
+        # p1's uncontested bid on card 1 still counted before the forfeit
+        self.assertEqual([c.player_id for c in s.players["p1"].lineup], ["b1"])
+        self.assertEqual(gl.database.recorded[-1][3], "p1")  # winner_id persisted
+
+    async def test_double_disconnect_is_a_tie(self):
+        s = make_session([make_card("b1"), make_card("b2")], [])
+        for pid in s.players:
+            await s.action_queues[pid].put(ready_action())
+
+        def drop(pid):
+            async def on_window(n):
+                s.players[pid].disconnected = True
+
+            return on_window
+
+        _, ev1, ev2 = await asyncio.wait_for(
+            asyncio.gather(
+                gl.game_loop(s),
+                self._read_until_end(s, "p1", drop("p1")),
+                self._read_until_end(s, "p2", drop("p2")),
+            ),
+            timeout=5,
+        )
+        self.assertEqual(ev1[-1].game_ended.result, pb.GAME_RESULT_TIE)
+        self.assertEqual(ev2[-1].game_ended.result, pb.GAME_RESULT_TIE)
+        self.assertTrue(ev1[-1].game_ended.by_forfeit)
+        self.assertIsNone(gl.database.recorded[-1][3])  # winner_id None
+
+    async def test_leaving_before_ready_forfeits(self):
+        s = make_session([make_card("b1")], [])
+        await s.action_queues["p1"].put(ready_action())  # p2 never readies
+
+        async def abandon():
+            await asyncio.sleep(0.1)
+            s.players["p2"].disconnected = True
+
+        _, ev1, _ = await asyncio.wait_for(
+            asyncio.gather(
+                gl.game_loop(s),
+                self._read_until_end(s, "p1"),
+                abandon(),
+            ),
+            timeout=5,
+        )
+        self.assertTrue(ev1[-1].HasField("game_ended"))
+        end = ev1[-1].game_ended
+        self.assertTrue(end.by_forfeit)
+        self.assertEqual(end.result, pb.GAME_RESULT_WIN)
+        # No cards were ever flipped
+        self.assertEqual(
+            sum(1 for e in ev1 if e.HasField("card_flipped")), 0
         )
 
 

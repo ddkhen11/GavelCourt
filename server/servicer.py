@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import uuid
 import grpc
 import sys
@@ -11,7 +12,32 @@ import duel_pb2_grpc as pb_grpc
 from session import Phase
 import db as database
 import matchmaking
-from game_loop import game_loop, wrap
+from game_loop import game_loop, send, wrap
+
+logger = logging.getLogger(__name__)
+
+
+def _observe_loop_task(session):
+    """A crashed game loop must not silently freeze both clients: log it,
+    push a terminal event so the streams end, and drop the session."""
+
+    def on_done(task: asyncio.Task) -> None:
+        if task.cancelled():
+            return
+        exc = task.exception()
+        if exc is None:
+            return
+        logger.error("game loop crashed for match %s", session.match_id, exc_info=exc)
+        for q in list(session.event_queues.values()) + list(
+            session.spectator_queues.values()
+        ):
+            q.put_nowait(
+                wrap(pb.ErrorEvent(code="INTERNAL", message="game loop crashed"))
+            )
+            q.put_nowait(wrap(pb.GameEndedEvent(result=pb.GAME_RESULT_UNSPECIFIED)))
+        matchmaking.remove_session(session.match_id)
+
+    return on_done
 
 
 class DuelServiceImpl(pb_grpc.DuelServiceServicer):
@@ -45,7 +71,11 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
     # ── Ranked matchmaking ──────────────────────────────────────────────────
 
     async def FindRankedMatch(self, request, context):
-        match_id = await matchmaking.find_ranked_match(request.player_id)
+        try:
+            match_id = await matchmaking.find_ranked_match(request.player_id)
+        except ValueError as e:  # e.g. same player queued from two tabs
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(e))  # type: ignore[misc]
+            return
         return pb.FindRankedMatchResponse(
             match_id=match_id,
             status=pb.MATCH_STATUS_READY,
@@ -92,34 +122,50 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
             await context.abort(grpc.StatusCode.NOT_FOUND, "no session")  # type: ignore[misc]
             return
 
-        session.event_queues[player_id] = asyncio.Queue()
+        my_event_queue: asyncio.Queue = asyncio.Queue()
+        session.event_queues[player_id] = my_event_queue
         session.action_queues[player_id] = asyncio.Queue()
-        session.players[player_id].connected = True
+        # A reattach (React StrictMode remount, pre-start reconnect) must not
+        # inherit the forfeit flag its dead predecessor stream set.
+        session.players[player_id].disconnected = False
+
+        def _still_current() -> bool:
+            return session.event_queues.get(player_id) is my_event_queue
 
         # 3. Reader task: phase-gated action enqueue
         async def reader():
             try:
                 async for action in request_iterator:
+                    is_play = action.WhichOneof("action") in ("bid", "pass")
                     if action.HasField("ready") and session.phase is Phase.WAITING:
                         await session.action_queues[player_id].put(action)
-                    elif (
-                        action.WhichOneof("action") in ("bid", "pass")
-                        and session.phase is Phase.BID_WINDOW
-                    ):
+                    elif is_play and session.players[player_id].is_full():
+                        await send(
+                            session,
+                            player_id,
+                            pb.ErrorEvent(
+                                code="ROSTER_FULL",
+                                message="roster is full — you are auto-passing",
+                            ),
+                        )
+                    elif is_play and session.phase is Phase.BID_WINDOW:
                         await session.action_queues[player_id].put(action)
                     else:
-                        await session.event_queues[player_id].put(
-                            wrap(
-                                pb.ErrorEvent(
-                                    code="INVALID_PHASE",
-                                    message="action not accepted right now",
-                                )
-                            )
+                        await send(
+                            session,
+                            player_id,
+                            pb.ErrorEvent(
+                                code="INVALID_PHASE",
+                                message="action not accepted right now",
+                            ),
                         )
             except Exception:
                 pass
             finally:
-                session.players[player_id].disconnected = True
+                # Only the stream that currently owns this player may forfeit
+                # it — a superseded stream's teardown is not a disconnect.
+                if _still_current():
+                    session.players[player_id].disconnected = True
 
         session.reader_tasks[player_id] = asyncio.create_task(reader())
 
@@ -127,16 +173,18 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
         if len(session.event_queues) == 2 and not session.game_loop_started:
             session.game_loop_started = True
             session.loop_task = asyncio.create_task(game_loop(session))
+            session.loop_task.add_done_callback(_observe_loop_task(session))
 
         # 5. Yield events to client until game ends
         try:
             while True:
-                event = await session.event_queues[player_id].get()
+                event = await my_event_queue.get()
                 yield event
                 if event.HasField("game_ended"):
                     break
         finally:
-            session.players[player_id].disconnected = True
+            if _still_current():
+                session.players[player_id].disconnected = True
 
     # ── Spectator stream ────────────────────────────────────────────────────
 

@@ -9,6 +9,7 @@ import duel_pb2 as pb
 from session import GameSession, Phase, PlayerSeason
 from constants import BID_WINDOW_SECONDS, PITY_THRESHOLD, STARTING_CREDITS, ROSTER_SIZE
 import db as database
+import matchmaking
 from scoring import score_lineup
 from elo import elo_change, elo_change_tie
 
@@ -87,18 +88,70 @@ def resolve_auction(bids: dict) -> tuple[str, int]:
     return winner, bids[winner]
 
 
+def _bid_resolved_event(
+    session: GameSession,
+    card: PlayerSeason,
+    bids: dict,
+    winner_id: str,
+    loser_id: str,
+    viewer_id: str | None = None,
+) -> pb.BidResolvedEvent:
+    """Perspective resolve for viewer_id, or the neutral spectator copy when
+    None (winner's numbers first, you_won always false)."""
+    me = viewer_id if viewer_id is not None else winner_id
+    opp = loser_id if me == winner_id else winner_id
+    return pb.BidResolvedEvent(
+        you_won=viewer_id == winner_id,
+        winning_bid=bids[winner_id],
+        your_bid=bids[me],
+        opponent_bid=bids[opp],
+        revealed_stats=to_card_stats(card),
+        your_credits_remaining=session.players[me].credits,
+        opponent_credits_remaining=session.players[opp].credits,
+        your_players_drafted=len(session.players[me].lineup),
+        opponent_players_drafted=len(session.players[opp].lineup),
+    )
+
+
 # ── Ready barrier ──────────────────────────────────────────────────────────
 
 
-async def wait_for_ready(session: GameSession) -> None:
+async def wait_for_ready(session: GameSession) -> bool:
+    """Returns True once both players sent Ready, False if someone
+    disconnected while waiting (closed the tab before clicking Ready)."""
+
     async def one(pid):
-        q = session.action_queues[pid]
         while True:
-            action = await q.get()
+            # Re-read the queue each poll: a pre-start reconnect swaps it.
+            q = session.action_queues[pid]
+            try:
+                action = await asyncio.wait_for(q.get(), timeout=0.5)
+            except asyncio.TimeoutError:
+                continue
             if action.HasField("ready"):
                 return
 
-    await asyncio.gather(*[one(pid) for pid in session.players])
+    async def watch_disconnect():
+        while not any(p.disconnected for p in session.players.values()):
+            await asyncio.sleep(0.2)
+
+    ready_task = asyncio.ensure_future(
+        asyncio.gather(*[one(pid) for pid in session.players])
+    )
+    watch_task = asyncio.ensure_future(watch_disconnect())
+    try:
+        done, _ = await asyncio.wait(
+            {ready_task, watch_task}, return_when=asyncio.FIRST_COMPLETED
+        )
+        return (
+            ready_task in done
+            and not ready_task.cancelled()
+            and ready_task.exception() is None
+        )
+    finally:
+        for t in (ready_task, watch_task):
+            t.cancel()
+        await asyncio.gather(ready_task, watch_task, return_exceptions=True)
 
 
 # ── Bid collection ─────────────────────────────────────────────────────────
@@ -117,13 +170,13 @@ async def collect_bids(session: GameSession, timeout: float) -> dict:
             if action.HasField("bid"):
                 amount = action.bid.amount
                 if amount > p.max_bid():
-                    await session.event_queues[player_id].put(
-                        wrap(
-                            pb.ErrorEvent(
-                                code="BID_EXCEEDS_MAX",
-                                message=f"Max bid is {p.max_bid()} (keep 1 credit per remaining slot)",
-                            )
-                        )
+                    await send(
+                        session,
+                        player_id,
+                        pb.ErrorEvent(
+                            code="BID_EXCEEDS_MAX",
+                            message=f"Max bid is {p.max_bid()} (keep 1 credit per remaining slot)",
+                        ),
                     )
                     continue
                 bids[player_id] = amount
@@ -178,10 +231,14 @@ async def finalize_game(session: GameSession, forfeit: bool) -> None:
     ia, ba_, ta = score_lineup(a.lineup)
     ib, bb_, tb = score_lineup(b.lineup)
 
-    if forfeit:
+    if forfeit and a.disconnected and b.disconnected:
+        # Both gone (shared outage, proxy restart): nobody deserves the win.
+        winner_id: str | None = None
+        results = {a.player_id: pb.GAME_RESULT_TIE, b.player_id: pb.GAME_RESULT_TIE}
+    elif forfeit:
         loser = next(p for p in (a, b) if p.disconnected)
         winner = a if loser is b else b
-        winner_id: str | None = winner.player_id
+        winner_id = winner.player_id
         results = {
             winner.player_id: pb.GAME_RESULT_WIN,
             loser.player_id: pb.GAME_RESULT_LOSS,
@@ -252,6 +309,9 @@ async def finalize_game(session: GameSession, forfeit: bool) -> None:
             )
         )
 
+    # Finished sessions must leave the registries or they leak forever.
+    matchmaking.remove_session(session.match_id)
+
 
 # ── Main game loop ─────────────────────────────────────────────────────────
 
@@ -259,31 +319,38 @@ async def finalize_game(session: GameSession, forfeit: bool) -> None:
 async def game_loop(session: GameSession) -> None:
     """Single coroutine driving the entire match. Only this fn mutates GameSession."""
 
-    await wait_for_ready(session)
+    if not await wait_for_ready(session):
+        # A player left before the match started: forfeit, don't strand the other.
+        return await finalize_game(session, forfeit=True)
 
+    started = pb.GameStartedEvent(
+        match_id=session.match_id,
+        board_size=len(session.board),
+        your_credits=STARTING_CREDITS,
+        roster_size=ROSTER_SIZE,
+    )
     for pid in session.players:
-        await send(
-            session,
-            pid,
-            pb.GameStartedEvent(
-                match_id=session.match_id,
-                board_size=len(session.board),
-                your_credits=STARTING_CREDITS,
-                roster_size=ROSTER_SIZE,
-            ),
-        )
+        await send(session, pid, started)
+    for q in session.spectator_queues.values():
+        await q.put(wrap(started))
 
     cards_shown = 0
 
-    while not session.both_full() and session.current_card() is not None:
+    # SPEC: the match runs until both rosters are full or the board PLUS the
+    # pity reserves are exhausted — leftover S/A pity cards keep flipping
+    # after the board runs out while someone still has slots to fill.
+    while not session.both_full() and (
+        session.current_card() is not None or session.pity_pool
+    ):
         if any(p.disconnected for p in session.players.values()):
             return await finalize_game(session, forfeit=True)
 
         is_pity = False
         card = session.current_card()
-        assert card is not None  # guaranteed by while condition
 
-        if session.consecutive_passes >= PITY_THRESHOLD and session.pity_pool:
+        if card is None or (
+            session.consecutive_passes >= PITY_THRESHOLD and session.pity_pool
+        ):
             card = session.pity_pool.pop(random.randrange(len(session.pity_pool)))
             is_pity = True
             session.consecutive_passes = 0
@@ -306,9 +373,14 @@ async def game_loop(session: GameSession) -> None:
                 session,
                 pid,
                 pb.BidWindowOpenEvent(
-                    duration_seconds=BID_WINDOW_SECONDS,
+                    duration_seconds=int(BID_WINDOW_SECONDS),
                     your_max_bid=p.max_bid(),
                 ),
+            )
+        # Neutral copy so spectators can render the bidding phase.
+        for q in session.spectator_queues.values():
+            await q.put(
+                wrap(pb.BidWindowOpenEvent(duration_seconds=int(BID_WINDOW_SECONDS)))
             )
 
         bids = await collect_bids(session, timeout=BID_WINDOW_SECONDS)
@@ -336,39 +408,16 @@ async def game_loop(session: GameSession) -> None:
             session.board_index += 1
 
         for pid in (winner_id, loser_id):
-            opp = loser_id if pid == winner_id else winner_id
             await send(
                 session,
                 pid,
-                pb.BidResolvedEvent(
-                    you_won=(pid == winner_id),
-                    winning_bid=winning_bid,
-                    your_bid=bids[pid],
-                    opponent_bid=bids[opp],
-                    revealed_stats=to_card_stats(card),
-                    your_credits_remaining=session.players[pid].credits,
-                    opponent_credits_remaining=session.players[opp].credits,
-                    your_players_drafted=len(session.players[pid].lineup),
-                    opponent_players_drafted=len(session.players[opp].lineup),
-                ),
+                _bid_resolved_event(session, card, bids, winner_id, loser_id, pid),
             )
 
         # Neutral BidResolved for spectators (both bids revealed)
         for q in session.spectator_queues.values():
             await q.put(
-                wrap(
-                    pb.BidResolvedEvent(
-                        you_won=False,
-                        winning_bid=winning_bid,
-                        your_bid=bids[winner_id],
-                        opponent_bid=bids[loser_id],
-                        revealed_stats=to_card_stats(card),
-                        your_credits_remaining=session.players[winner_id].credits,
-                        opponent_credits_remaining=session.players[loser_id].credits,
-                        your_players_drafted=len(session.players[winner_id].lineup),
-                        opponent_players_drafted=len(session.players[loser_id].lineup),
-                    )
-                )
+                wrap(_bid_resolved_event(session, card, bids, winner_id, loser_id))
             )
 
     await finalize_game(session, forfeit=False)

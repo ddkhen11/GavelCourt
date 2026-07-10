@@ -31,7 +31,6 @@ class PlayerState:
     player_id: str
     credits: int = STARTING_CREDITS
     lineup: list = field(default_factory=list)  # list of PlayerSeason
-    connected: bool = False
     disconnected: bool = False  # set if the stream drops mid-match
 
     def is_full(self) -> bool:
@@ -42,6 +41,9 @@ class PlayerState:
 
     def max_bid(self) -> int:
         # Reserve rule: keep >= 1 credit per remaining slot after this one.
+        # A full roster can't bid at all (the raw formula would say credits+1).
+        if self.is_full():
+            return 0
         return max(0, self.credits - (self.empty_slots() - 1))
 
 
@@ -54,7 +56,6 @@ class GameSession:
     phase: Phase = Phase.WAITING
     players: dict = field(default_factory=dict)  # player_id -> PlayerState
     consecutive_passes: int = 0
-    ready_players: set = field(default_factory=set)
     game_loop_started: bool = False
     # Per-player queues (NOT one shared action queue — see SPEC "Game loop" rationale)
     action_queues: dict = field(
