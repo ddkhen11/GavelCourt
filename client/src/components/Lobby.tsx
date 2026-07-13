@@ -20,11 +20,12 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
     <section className="lobby">
       {!match.identity ? (
         <div className="register-panel panel">
-          <h2 className="register-title">Enter the arena</h2>
+          <p className="register-admit hud-label">Admit one</p>
+          <h2 className="register-title">Enter the draft</h2>
           <input
             className="register-input"
             data-testid="username"
-            placeholder="pick a username"
+            placeholder="print name here"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -37,8 +38,7 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
             Register
           </button>
           <p className="register-blurb">
-            Outbid your rival for hidden NBA legends — the best five-man lineup
-            wins.
+            100 credits · 5 seats · blind bids · best lineup wins
           </p>
         </div>
       ) : (

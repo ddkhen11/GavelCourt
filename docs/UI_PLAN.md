@@ -64,7 +64,7 @@ AI-generated. This direction replaces it everywhere. Define once in
   `--duel` writes board.png + results.png_
 
 ## Phase 1 — Lobby
-- [ ] **(redo, ticket stub)** Register screen: a ticket-booth panel ("ADMIT ONE"
+- [x] **(redo, ticket stub)** Register screen: a ticket-booth panel ("ADMIT ONE"
   framing), big name input, one rust block button, one-line game explainer set like a
   ticket fine-print line — _gate: e2e green + lobby.png_
 - [ ] **(redo, ticket stub)** Matchmaking: "Find Ranked Match" as a marquee block
