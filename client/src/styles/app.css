@@ -1,4 +1,4 @@
-/* ── app shell: top bar + centered column ─────────────────────────────── */
+/* ── app shell: masthead + stripe band + centered column ──────────────── */
 
 .app {
   min-height: 100dvh;
@@ -12,28 +12,37 @@
   justify-content: space-between;
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-5);
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
+  background: var(--paper);
+  border-bottom: var(--rule-thick);
+}
+
+.topbar-stripe {
+  border-bottom: var(--rule);
 }
 
 .topbar-logo {
   font-size: var(--text-lg);
+  font-style: italic;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
 .topbar-logo-accent {
-  color: var(--action);
+  color: var(--rust);
 }
 
+/* the signed-in user, printed like a ticket stub torn off the masthead */
 .topbar-user {
-  font-size: var(--text-sm);
-  color: var(--muted);
-  background: var(--panel-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  background: var(--paper-deep);
+  border: 1px solid var(--ink);
+  border-left: var(--perforation);
+  border-radius: var(--radius);
   padding: var(--sp-1) var(--sp-3);
   white-space: nowrap;
   overflow: hidden;

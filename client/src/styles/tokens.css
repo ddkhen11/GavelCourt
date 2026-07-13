@@ -1,28 +1,28 @@
-/* ── "arena night" design tokens ──────────────────────────────────────── */
+/* ── "ticket stub" (70s ABA) design tokens — print inks on paper ──────── */
 
 :root {
   /* palette */
-  --bg: #0b1220;
-  --panel: #141d31;
-  --panel-raised: #1a2542;
-  --border: #243049;
-  --ink: #e8ecf5;
-  --muted: #8b96ad;
-  --action: #ff7a1a;
-  --action-hover: #ff9142;
-  --win: #3ddc84;
-  --lose: #ff5d5d;
+  --paper: #f4ecd9;
+  --paper-raised: #f9f2e0; /* blocks that sit on the paper */
+  --paper-deep: #ece0c6; /* toasted fills, table stripes */
+  --ink: #26201a;
+  --ink-soft: #665b4c;
+  --rust: #a63e15; /* the single action color */
+  --rust-bright: #c4551b; /* stripes and decoration only */
+  --navy: #22406e;
+  --gold: #c19017;
+  --win: #2e6b34;
+  --lose: #9d1b1b;
 
-  /* tier colors */
-  --tier-s: #f5c542;
-  --tier-a: #c04dfa;
-  --tier-b: #3d8bff;
-  --tier-c: #8b96ad;
+  /* tier inks */
+  --tier-s: #c19017;
+  --tier-a: #6d4396;
+  --tier-b: #2c5c94;
+  --tier-c: #6e6657;
 
   /* type */
-  --font:
-    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-    sans-serif;
+  --font-grot: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-slab: "American Typewriter", "Courier New", Courier, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
@@ -39,12 +39,13 @@
   --sp-6: 32px;
   --sp-7: 48px;
 
-  /* shape & depth */
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-pill: 999px;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.25);
+  /* shape & depth — square corners, hard offsets, never blur */
+  --radius: 2px;
+  --rule: 2px solid var(--ink);
+  --rule-thick: 3px solid var(--ink);
+  --perforation: 2px dashed var(--ink-soft);
+  --stamp: 4px 4px 0 var(--ink);
+  --stamp-sm: 3px 3px 0 var(--ink);
 
   /* motion */
   --speed: 180ms;
@@ -62,16 +63,15 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family: var(--font);
+  font-family: var(--font-grot);
   font-size: var(--text-md);
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* ── base elements ────────────────────────────────────────────────────── */
@@ -80,100 +80,99 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
 code {
-  font-variant-numeric: tabular-nums;
-  background: var(--panel-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--sp-1);
+  font-family: var(--font-slab);
+  font-size: 0.95em;
+  background: var(--paper-deep);
+  border: 1px solid var(--ink-soft);
+  border-radius: var(--radius);
   padding: 0 var(--sp-1);
 }
 
 button {
   font: inherit;
   font-weight: 700;
-  color: var(--bg);
-  background: var(--action);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background: var(--rust);
+  border: var(--rule);
+  border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-4);
+  box-shadow: var(--stamp-sm);
   cursor: pointer;
   transition:
-    background var(--speed) var(--ease),
-    transform var(--speed) var(--ease);
+    transform var(--speed) var(--ease),
+    box-shadow var(--speed) var(--ease);
 }
 
 button:hover:not(:disabled) {
-  background: var(--action-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--stamp);
 }
 
 button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
 button:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline: 2px dashed var(--ink);
+  outline-offset: 3px;
 }
 
 button:disabled {
-  opacity: 0.45;
+  color: var(--ink-soft);
+  background: var(--paper-deep);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
-/* quieter alternative to the hardwood-orange default button */
-.btn-secondary {
-  color: var(--ink);
-  background: var(--panel-raised);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #24314e;
-  border-color: var(--muted);
-}
-
 input {
-  font: inherit;
+  font-family: var(--font-slab);
+  font-size: var(--text-md);
   color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: var(--paper-raised);
+  border: var(--rule);
+  border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
   transition: border-color var(--speed) var(--ease);
 }
 
 input::placeholder {
-  color: var(--muted);
+  color: var(--ink-soft);
 }
 
 input:hover {
-  border-color: var(--muted);
+  border-color: var(--navy);
 }
 
 input:focus-visible {
-  outline: 2px solid var(--action);
-  outline-offset: -1px;
-  border-color: var(--action);
+  outline: 2px dashed var(--rust);
+  outline-offset: 2px;
+  border-color: var(--rust);
 }
 
 /* ── shared utilities ─────────────────────────────────────────────────── */
 
-/* small uppercase "SCOREBOARD" label for HUD numbers */
+/* ticket fine print: small slab caps for labels */
 .hud-label {
+  font-family: var(--font-slab);
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
 }
 
-/* credits, scores, countdowns */
+/* box-score numerals */
 .tnum {
+  font-family: var(--font-slab);
   font-variant-numeric: tabular-nums;
 }
 
@@ -190,12 +189,31 @@ input:focus-visible {
   border: 0;
 }
 
+/* printed block sitting on the paper */
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  border: var(--rule);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--stamp);
   padding: var(--sp-5);
+}
+
+/* quieter navy variant of the block button */
+.btn-secondary {
+  color: var(--paper);
+  background: var(--navy);
+}
+
+/* the classic 70s stripe stack — use as a thin decorative band */
+.stripe-rule {
+  height: 12px;
+  background: linear-gradient(
+    to bottom,
+    var(--rust-bright) 0 5px,
+    transparent 5px 7px,
+    var(--navy) 7px 11px,
+    transparent 11px 12px
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {

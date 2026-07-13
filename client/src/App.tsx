@@ -37,10 +37,11 @@ export default function App() {
         </h1>
         {match.identity && (
           <p className="topbar-user" data-testid="identity">
-            Playing as <strong>{match.identity.username}</strong>
+            Ticket holder · <strong>{match.identity.username}</strong>
           </p>
         )}
       </header>
+      <div className="stripe-rule topbar-stripe" role="presentation" />
 
       <main className="shell">
         {matchId === null ? (
