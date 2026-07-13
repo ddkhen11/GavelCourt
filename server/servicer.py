@@ -50,13 +50,30 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
         await database.register_player(player_id, request.username, auth_token)
         return pb.RegisterPlayerResponse(player_id=player_id, auth_token=auth_token)
 
+    # ── Auth helper ─────────────────────────────────────────────────────────
+
+    @staticmethod
+    async def _require_token(context, player_id: str) -> None:
+        """Abort UNAUTHENTICATED unless the caller's auth-token metadata
+        belongs to player_id — matchmaking must not trust a bare request
+        player_id (defense in depth; see security review)."""
+        md = dict(context.invocation_metadata())
+        raw_tok = md.get("auth-token")
+        token = (
+            raw_tok if isinstance(raw_tok, str) or raw_tok is None else raw_tok.decode()
+        )
+        if not token or not await database.verify_token(player_id, token):
+            await context.abort(grpc.StatusCode.UNAUTHENTICATED, "invalid token")  # type: ignore[misc]
+
     # ── Challenge matchmaking ───────────────────────────────────────────────
 
     async def CreateMatch(self, request, context):
+        await self._require_token(context, request.player_id)
         match_id, join_code = matchmaking.create_challenge_match(request.player_id)
         return pb.CreateMatchResponse(match_id=match_id, join_code=join_code)
 
     async def JoinMatch(self, request, context):
+        await self._require_token(context, request.player_id)
         try:
             session = matchmaking.join_challenge_match(
                 request.match_id, request.player_id, request.join_code
@@ -72,6 +89,7 @@ class DuelServiceImpl(pb_grpc.DuelServiceServicer):
     # ── Ranked matchmaking ──────────────────────────────────────────────────
 
     async def FindRankedMatch(self, request, context):
+        await self._require_token(context, request.player_id)
         try:
             match_id = await matchmaking.find_ranked_match(request.player_id)
         except ValueError as e:  # e.g. same player queued from two tabs

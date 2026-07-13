@@ -33,6 +33,12 @@ function loadIdentity(): Identity | null {
   }
 }
 
+// Matchmaking RPCs are token-verified server-side; a bare player_id is not
+// trusted.
+function authMetadata(identity: Identity) {
+  return { "player-id": identity.playerId, "auth-token": identity.authToken };
+}
+
 export function useMatch() {
   const [identity, setIdentity] = useState<Identity | null>(loadIdentity);
   const [status, setStatus] = useState<MatchStatus>("idle");
@@ -74,7 +80,7 @@ export function useMatch() {
     try {
       const req = new FindRankedMatchRequest();
       req.setPlayerId(identity.playerId);
-      const res = await client.findRankedMatch(req);
+      const res = await client.findRankedMatch(req, authMetadata(identity));
       setMatchId(res.getMatchId());
       setStatus("matched");
       return res.getMatchId();
@@ -91,7 +97,7 @@ export function useMatch() {
       const req = new CreateMatchRequest();
       req.setPlayerId(identity.playerId);
       req.setMode(MatchMode.MATCH_MODE_CHALLENGE);
-      const res = await client.createMatch(req);
+      const res = await client.createMatch(req, authMetadata(identity));
       setMatchId(res.getMatchId());
       setJoinCode(res.getJoinCode());
       setStatus("waiting");
@@ -111,7 +117,7 @@ export function useMatch() {
         req.setMatchId(targetMatchId);
         req.setPlayerId(identity.playerId);
         req.setJoinCode(code);
-        const res = await client.joinMatch(req);
+        const res = await client.joinMatch(req, authMetadata(identity));
         setMatchId(res.getMatchId());
         setStatus("matched");
         return res.getMatchId();

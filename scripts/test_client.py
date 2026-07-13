@@ -20,8 +20,11 @@ async def main(username):
         pid, tok = reg.player_id, reg.auth_token
         print(f"[{username}] registered {pid[:8]}", flush=True)
 
+        meta = (("player-id", pid), ("auth-token", tok))
         print(f"[{username}] waiting for match...", flush=True)
-        ranked = await stub.FindRankedMatch(pb.FindRankedMatchRequest(player_id=pid))
+        ranked = await stub.FindRankedMatch(
+            pb.FindRankedMatchRequest(player_id=pid), metadata=meta
+        )
         print(f"[{username}] paired match={ranked.match_id[:8]}", flush=True)
 
         action_q = asyncio.Queue()
@@ -36,7 +39,6 @@ async def main(username):
                 yield a
 
         async def play():
-            meta = (("player-id", pid), ("auth-token", tok))
             async for ev in stub.StreamDuel(actions(), metadata=meta):
                 w = ev.WhichOneof("event")
 

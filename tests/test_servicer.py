@@ -61,6 +61,57 @@ class TestInterface(unittest.TestCase):
             )
 
 
+class TestMatchmakingAuth(unittest.IsolatedAsyncioTestCase):
+    """Matchmaking RPCs must not trust a bare request player_id."""
+
+    def setUp(self):
+        self._orig = (servicer_mod.database, servicer_mod.matchmaking)
+
+        async def verify_token(pid, token):
+            return token == "good"
+
+        async def find_ranked_match(pid):
+            return "match-1"
+
+        servicer_mod.database = types.SimpleNamespace(verify_token=verify_token)
+        servicer_mod.matchmaking = types.SimpleNamespace(
+            create_challenge_match=lambda pid: ("match-1", "CODE42"),
+            join_challenge_match=lambda m, p, c: (_ for _ in ()).throw(
+                ValueError("unused")
+            ),
+            find_ranked_match=find_ranked_match,
+        )
+
+    def tearDown(self):
+        servicer_mod.database, servicer_mod.matchmaking = self._orig
+
+    async def test_missing_or_bad_token_aborts(self):
+        impl = DuelServiceImpl()
+        for method, md in [
+            ("CreateMatch", {}),
+            ("JoinMatch", {"auth-token": "bad"}),
+            ("FindRankedMatch", {"player-id": "p1", "auth-token": "bad"}),
+        ]:
+            req = {
+                "CreateMatch": pb.CreateMatchRequest(player_id="p1"),
+                "JoinMatch": pb.JoinMatchRequest(player_id="p1"),
+                "FindRankedMatch": pb.FindRankedMatchRequest(player_id="p1"),
+            }[method]
+            with self.assertRaises(AbortCalled, msg=method) as cm:
+                await getattr(impl, method)(req, FakeContext(md))
+            self.assertEqual(cm.exception.code.name, "UNAUTHENTICATED", method)
+
+    async def test_valid_token_passes(self):
+        impl = DuelServiceImpl()
+        ctx = FakeContext({"auth-token": "good"})
+        res = await impl.CreateMatch(pb.CreateMatchRequest(player_id="p1"), ctx)
+        self.assertEqual(res.join_code, "CODE42")
+        res = await impl.FindRankedMatch(
+            pb.FindRankedMatchRequest(player_id="p1"), ctx
+        )
+        self.assertEqual(res.match_id, "match-1")
+
+
 class TestStreamDuelWiring(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self._orig = (
