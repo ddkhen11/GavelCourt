@@ -46,7 +46,7 @@ Define once in `client/src/styles/tokens.css`, import from `main.tsx`.
   properties) + global reset/base styles + app shell: centered column layout, top bar
   with logo-type "NBA AUCTION DRAFT" and the signed-in username — _gate: shell renders,
   tsc + both e2e gates green_
-- [ ] `client/e2e/screenshot.mjs`: registers a throwaway player and captures named
+- [x] `client/e2e/screenshot.mjs`: registers a throwaway player and captures named
   full-page shots (`lobby`, plus `--duel` mode that pairs two players, readies up, and
   shoots `board` mid-bid and `results` after an auto-played match) into
   `client/e2e/shots/` (gitignore it) — _gate: `node e2e/screenshot.mjs` writes lobby.png;

@@ -17,6 +17,7 @@ venv/
 node_modules/
 dist/
 *.local
+client/e2e/shots/
 
 # OS / editor
 .DS_Store
