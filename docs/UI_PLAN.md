@@ -75,10 +75,10 @@ AI-generated. This direction replaces it everywhere. Define once in
   hairline rules, printed `no. 1/2/3` rank marks (no emoji medals), elo in slab
   numerals, W–L muted; current player's row highlighted like a highlighter stroke —
   _gate: e2e green + lobby.png reviewed_
-- [ ] 🚦 **Lobby review**: human looks at lobby.png / live app — _gate: human approves_
+- [x] 🚦 **Lobby review**: human approved the ticket-stub lobby (2026-07-13)
 
 ## Phase 2 — The duel board
-- [ ] Player card component: vintage trading-card layout (name, season, team, position
+- [x] Player card component: vintage trading-card layout (name, season, team, position
   badge), tier-inked double-rule frame + tier letter badge, flip-in animation on each
   new card (`prefers-reduced-motion`: fade) — _gate: e2e green + board.png_
 - [ ] Bid HUD: both players' credits and roster as 5 slot-dots, you vs opponent framing;

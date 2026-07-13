@@ -57,6 +57,7 @@ try {
     // board.png mid-bid: window open with an amount typed in
     await p1.getByTestId("bid-window").waitFor({ timeout: 10000 });
     await p1.getByTestId("bid-amount").fill("3");
+    await p1.waitForTimeout(400); // let the card flip-in settle
     await shot(p1, "board");
 
     const deadline = Date.now() + 90000;

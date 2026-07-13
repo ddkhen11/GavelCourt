@@ -62,18 +62,42 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
       </p>
 
       {state.card && (
-        <div data-testid="card">
-          {state.card.isPity && <p data-testid="pity">PITY CARD — S/A guaranteed</p>}
-          <h3 data-testid="card-flipped">
-            {state.card.name} ({state.card.season} {state.card.position})
+        <div
+          key={state.card.number}
+          data-testid="card"
+          className={`pcard pcard-${(
+            TIER_NAMES[state.card.tier] ?? "c"
+          ).toLowerCase()}`}
+        >
+          {state.card.isPity && (
+            <p className="pcard-pity" data-testid="pity">
+              Pity card — S/A guaranteed
+            </p>
+          )}
+          <div className="pcard-head">
+            <span>{state.card.team}</span>
+            <span className="tnum">{state.card.season}</span>
+          </div>
+          <h3 className="pcard-name" data-testid="card-flipped">
+            {state.card.name}
+            <span className="visually-hidden">
+              {" "}
+              ({state.card.season} {state.card.position})
+            </span>
           </h3>
-          <p>
-            #<span data-testid="card-number">{state.card.number}</span> ·{" "}
-            {state.card.team} · tier{" "}
-            <strong data-testid="card-tier">
+          <div className="pcard-meta">
+            <span className="pcard-pos">{state.card.position}</span>
+            <strong className="pcard-tier-badge" data-testid="card-tier">
               {TIER_NAMES[state.card.tier] ?? "?"}
-            </strong>{" "}
-            · {state.card.remaining} cards left
+            </strong>
+          </div>
+          <p className="pcard-foot">
+            <span>
+              card no. <span className="tnum" data-testid="card-number">{state.card.number}</span>
+            </span>
+            <span>
+              <span className="tnum">{state.card.remaining}</span> to come
+            </span>
           </p>
         </div>
       )}

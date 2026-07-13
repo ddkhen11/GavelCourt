@@ -1,0 +1,155 @@
+/* ── the duel board: vintage trading card ─────────────────────────────── */
+
+.pcard {
+  --tier-ink: var(--tier-c);
+  --tier-badge-ink: var(--paper);
+  position: relative;
+  width: min(360px, 100%);
+  margin-inline: auto;
+  background: var(--paper-raised);
+  border: 5px solid var(--tier-ink);
+  border-radius: var(--radius);
+  box-shadow: var(--stamp);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  animation: pcard-flip var(--speed-slow) var(--ease);
+}
+
+/* second printed rule just inside the tier frame */
+.pcard::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.pcard-s {
+  --tier-ink: var(--tier-s);
+  --tier-badge-ink: var(--ink);
+}
+
+.pcard-a {
+  --tier-ink: var(--tier-a);
+}
+
+.pcard-b {
+  --tier-ink: var(--tier-b);
+}
+
+.pcard-c {
+  --tier-ink: var(--tier-c);
+}
+
+@keyframes pcard-flip {
+  from {
+    transform: perspective(800px) rotateY(80deg);
+    opacity: 0.3;
+  }
+  to {
+    transform: perspective(800px) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+/* reduced motion: the global kill switch makes this an instant fade */
+@media (prefers-reduced-motion: reduce) {
+  .pcard {
+    animation-name: pcard-fade;
+  }
+
+  @keyframes pcard-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.pcard-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  border-bottom: var(--perforation);
+}
+
+.pcard-name {
+  font-size: var(--text-xl);
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  text-align: center;
+  padding: 0 var(--sp-2);
+  overflow-wrap: anywhere;
+}
+
+.pcard-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+}
+
+.pcard-pos {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--paper);
+  background: var(--navy);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 2px var(--sp-2);
+}
+
+.pcard-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: var(--text-lg);
+  font-weight: 900;
+  color: var(--tier-badge-ink);
+  background: var(--tier-ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.pcard-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  padding: var(--sp-2) var(--sp-2) var(--sp-1);
+  border-top: var(--perforation);
+}
+
+/* pity banner — full gold-foil treatment lands with the resolve task */
+.pcard-pity {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: var(--ink);
+  background: var(--tier-s);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  padding: var(--sp-1) var(--sp-2);
+}
