@@ -43,11 +43,9 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
         </div>
       ) : (
         <div className="mm-grid">
-          <div className="panel mm-ranked">
+          <div className="mm-ranked">
+            <p className="mm-sub">Tonight · one night only</p>
             <h2 className="mm-title">Ranked duel</h2>
-            <p className="mm-sub">
-              Queue up — you're matched with the next challenger.
-            </p>
             <button
               className="mm-find"
               data-testid="find-ranked"
@@ -57,19 +55,18 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
               {match.status === "searching" ? (
                 <>
                   Searching
-                  <span className="mm-dots" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
+                  <span className="mm-cursor" aria-hidden="true">
+                    ▌
                   </span>
                 </>
               ) : (
                 "Find Ranked Match"
               )}
             </button>
+            <p className="mm-sub">You vs the next name in the queue</p>
           </div>
           <div className="panel mm-challenge">
-            <h3 className="mm-title-sm">Challenge a friend</h3>
+            <h3 className="mm-title-sm">Challenge booth</h3>
             <button
               className="btn-secondary"
               data-testid="create-challenge"

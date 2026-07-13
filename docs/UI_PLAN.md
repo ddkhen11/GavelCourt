@@ -67,7 +67,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] **(redo, ticket stub)** Register screen: a ticket-booth panel ("ADMIT ONE"
   framing), big name input, one rust block button, one-line game explainer set like a
   ticket fine-print line — _gate: e2e green + lobby.png_
-- [ ] **(redo, ticket stub)** Matchmaking: "Find Ranked Match" as a marquee block
+- [x] **(redo, ticket stub)** Matchmaking: "Find Ranked Match" as a marquee block
   (searching state with a typewriter-style indicator), challenge create/join as a
   "CHALLENGE BOOTH" block with a copyable join code set in typewriter caps; error
   states styled inline as print corrections — _gate: e2e green + lobby.png_
