@@ -229,7 +229,7 @@
   flex-shrink: 0;
 }
 
-/* ── leaderboard ──────────────────────────────────────────────────────── */
+/* ── the standings: a box score ───────────────────────────────────────── */
 
 .lb {
   display: flex;
@@ -239,6 +239,32 @@
 
 .lb-title {
   font-size: var(--text-lg);
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.lb-head,
+.lb-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto 4.5rem;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.lb-head {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  border-bottom: var(--rule);
+  padding-bottom: var(--sp-1);
+}
+
+.lb-head span:nth-child(3),
+.lb-head span:nth-child(4) {
+  text-align: right;
 }
 
 .lb-list {
@@ -248,28 +274,33 @@
   flex-direction: column;
 }
 
+/* hairline rules between rows, like agate type in the sports section */
 .lb-row {
-  display: grid;
-  grid-template-columns: 2.25rem 1fr auto auto;
-  align-items: baseline;
-  gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-sm);
+  border-bottom: 1px solid rgba(102, 91, 76, 0.35);
 }
 
-.lb-row:nth-child(even) {
-  background: rgba(36, 48, 73, 0.35);
+.lb-row:last-child {
+  border-bottom: none;
 }
 
+/* highlighter stroke over the reader's own line */
 .lb-row-me {
-  background: rgba(255, 122, 26, 0.12);
-  box-shadow: inset 3px 0 0 var(--action);
+  background: rgba(193, 144, 23, 0.28);
+}
+
+.lb-row-me .lb-name {
+  font-weight: 700;
 }
 
 .lb-rank {
-  color: var(--muted);
+  font-family: var(--font-slab);
   font-size: var(--text-sm);
-  text-align: center;
+  color: var(--ink-soft);
+}
+
+.lb-rank-top {
+  color: var(--rust);
+  font-weight: 700;
 }
 
 .lb-name {
@@ -280,13 +311,13 @@
 
 .lb-elo {
   font-size: var(--text-lg);
-  font-weight: 800;
+  font-weight: 700;
+  text-align: right;
 }
 
 .lb-record {
-  color: var(--muted);
+  color: var(--ink-soft);
   font-size: var(--text-sm);
-  min-width: 4.5rem;
   text-align: right;
 }
 

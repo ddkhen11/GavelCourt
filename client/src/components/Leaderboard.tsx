@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { GetLeaderboardRequest, LeaderboardEntry } from "duel-protos";
 import { duelClient as client } from "../grpc/client";
 
-const MEDALS = ["🥇", "🥈", "🥉"];
-
 export default function Leaderboard({
   currentUsername,
 }: {
@@ -23,12 +21,18 @@ export default function Leaderboard({
 
   return (
     <section className="panel lb" data-testid="leaderboard">
-      <h2 className="lb-title">Leaderboard</h2>
+      <h2 className="lb-title">The Standings</h2>
       {error && (
         <p className="lobby-error" data-testid="leaderboard-error">
           {error}
         </p>
       )}
+      <div className="lb-head" aria-hidden="true">
+        <span>no.</span>
+        <span>player</span>
+        <span>elo</span>
+        <span>w–l</span>
+      </div>
       <ol className="lb-list">
         {entries.map((e, i) => (
           <li
@@ -41,17 +45,20 @@ export default function Leaderboard({
                 : "")
             }
           >
-            <span className="lb-rank tnum" aria-hidden="true">
-              {MEDALS[i] ?? i + 1}
+            <span
+              className={"lb-rank" + (i < 3 ? " lb-rank-top" : "")}
+              aria-hidden="true"
+            >
+              {i < 3 ? `no.${i + 1}` : i + 1}
             </span>
             <span className="lb-name">{e.username}</span>
-            {/* hidden separators keep the machine-readable "name — elo (WW/LL)"
+            {/* hidden separators keep the machine-readable "name — elo (record)"
                 text shape the leaderboard e2e gate parses */}
             <span className="visually-hidden">{" — "}</span>
             <span className="lb-elo tnum">{e.elo}</span>
             <span className="lb-record tnum">
               <span className="visually-hidden">{" ("}</span>
-              {e.wins}W/{e.losses}L
+              {e.wins}–{e.losses}
               <span className="visually-hidden">{")"}</span>
             </span>
           </li>

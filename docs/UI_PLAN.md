@@ -71,7 +71,7 @@ AI-generated. This direction replaces it everywhere. Define once in
   (searching state with a typewriter-style indicator), challenge create/join as a
   "CHALLENGE BOOTH" block with a copyable join code set in typewriter caps; error
   states styled inline as print corrections — _gate: e2e green + lobby.png_
-- [ ] **(redo, ticket stub)** Leaderboard as "THE STANDINGS": box-score table with
+- [x] **(redo, ticket stub)** Leaderboard as "THE STANDINGS": box-score table with
   hairline rules, printed `no. 1/2/3` rank marks (no emoji medals), elo in slab
   numerals, W–L muted; current player's row highlighted like a highlighter stroke —
   _gate: e2e green + lobby.png reviewed_
