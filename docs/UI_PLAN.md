@@ -84,7 +84,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] Bid HUD: both players' credits and roster as 5 slot-dots, you vs opponent framing;
   countdown bar animating across `duration_seconds` when the window opens; max-bid
   shown next to the input — _gate: e2e green + board.png_
-- [ ] Bid controls: numeric input with +/- steppers, quick chips (min / half / max),
+- [x] Bid controls: numeric input with +/- steppers, quick chips (min / half / max),
   distinct Pass button; disabled/full-roster states obvious — _gate: e2e green +
   board.png_
 - [ ] Resolve + events feed: win/lose stamp on resolution with the revealed LAKER score

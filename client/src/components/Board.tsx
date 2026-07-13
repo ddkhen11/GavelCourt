@@ -46,6 +46,13 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
     if (bidding) setAmount("");
   }, [bidding, state.card?.number]);
 
+  // +/- steppers clamp to [0, maxBid]; an unparsable box counts as 0.
+  const step = (d: number) => {
+    const max = state.bidWindow?.maxBid ?? 0;
+    const cur = amount !== "" && Number.isInteger(parsedBid) ? parsedBid : 0;
+    setAmount(String(Math.min(max, Math.max(0, cur + d))));
+  };
+
   if (!state.started) {
     return (
       <section>
@@ -141,27 +148,76 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
               {state.bidWindow!.maxBid}
             </strong>
           </p>
-          <input
-            data-testid="bid-amount"
-            type="number"
-            min={0}
-            max={state.bidWindow!.maxBid}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <button
-            data-testid="place-bid"
-            disabled={!bidValid}
-            onClick={() => sendBid(parsedBid)}
-          >
-            Bid
-          </button>
-          <button data-testid="pass" onClick={sendPass}>
-            Pass
-          </button>
+          <div className="bid-stepper">
+            <button
+              type="button"
+              className="step-btn"
+              aria-label="decrease bid"
+              onClick={() => step(-1)}
+            >
+              −
+            </button>
+            <input
+              className="bid-input tnum"
+              data-testid="bid-amount"
+              type="number"
+              min={0}
+              max={state.bidWindow!.maxBid}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <button
+              type="button"
+              className="step-btn"
+              aria-label="increase bid"
+              onClick={() => step(1)}
+            >
+              +
+            </button>
+          </div>
+          <div className="bid-chips">
+            <button type="button" className="chip" onClick={() => setAmount("1")}>
+              min 1
+            </button>
+            <button
+              type="button"
+              className="chip"
+              onClick={() =>
+                setAmount(
+                  String(Math.max(1, Math.floor(state.bidWindow!.maxBid / 2))),
+                )
+              }
+            >
+              half {Math.max(1, Math.floor(state.bidWindow!.maxBid / 2))}
+            </button>
+            <button
+              type="button"
+              className="chip"
+              onClick={() => setAmount(String(state.bidWindow!.maxBid))}
+            >
+              max {state.bidWindow!.maxBid}
+            </button>
+          </div>
+          <div className="bid-actions">
+            <button
+              className="bid-go"
+              data-testid="place-bid"
+              disabled={!bidValid}
+              onClick={() => sendBid(parsedBid)}
+            >
+              Bid
+            </button>
+            <button className="bid-pass" data-testid="pass" onClick={sendPass}>
+              Pass
+            </button>
+          </div>
         </div>
       )}
-      {bidding && full && <p data-testid="roster-full">Roster full — auto-passing</p>}
+      {bidding && full && (
+        <p className="board-notice" data-testid="roster-full">
+          Roster full — auto-passing
+        </p>
+      )}
 
       {state.lastResolve && (
         <p data-testid="resolve">
