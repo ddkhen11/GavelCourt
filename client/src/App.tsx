@@ -12,48 +12,59 @@ export default function App() {
   const { matchId } = match;
 
   return (
-    <main>
-      <h1>NBA Auction Draft</h1>
+    <div className="app">
+      <header className="topbar">
+        <h1 className="topbar-logo">
+          NBA <span className="topbar-logo-accent">Auction Draft</span>
+        </h1>
+        {match.identity && (
+          <p className="topbar-user" data-testid="identity">
+            Playing as <strong>{match.identity.username}</strong>
+          </p>
+        )}
+      </header>
 
-      {matchId === null ? (
-        <>
-          <Lobby match={match} />
-          <Leaderboard />
-        </>
-      ) : (
-        <>
-          <p data-testid="match-id">{matchId}</p>
-          {!duel.state.started && match.status === "waiting" && match.joinCode && (
-            <p>
-              Share match id <code>{matchId}</code> and code{" "}
-              <code data-testid="challenge-code">{match.joinCode}</code>
-            </p>
-          )}
+      <main className="shell">
+        {matchId === null ? (
+          <>
+            <Lobby match={match} />
+            <Leaderboard />
+          </>
+        ) : (
+          <>
+            <p data-testid="match-id">{matchId}</p>
+            {!duel.state.started && match.status === "waiting" && match.joinCode && (
+              <p>
+                Share match id <code>{matchId}</code> and code{" "}
+                <code data-testid="challenge-code">{match.joinCode}</code>
+              </p>
+            )}
 
-          {!duel.state.ended ? (
-            <>
-              <Board
-                state={duel.state}
-                sendReady={duel.sendReady}
-                sendBid={duel.sendBid}
-                sendPass={duel.sendPass}
-              />
-              {duel.state.started && (
-                <Lineup
-                  players={duel.state.lineup}
-                  rosterSize={duel.state.rosterSize}
+            {!duel.state.ended ? (
+              <>
+                <Board
+                  state={duel.state}
+                  sendReady={duel.sendReady}
+                  sendBid={duel.sendBid}
+                  sendPass={duel.sendPass}
                 />
-              )}
-            </>
-          ) : (
-            <Results
-              ended={duel.state.ended}
-              rosterSize={duel.state.rosterSize}
-              onPlayAgain={match.reset}
-            />
-          )}
-        </>
-      )}
-    </main>
+                {duel.state.started && (
+                  <Lineup
+                    players={duel.state.lineup}
+                    rosterSize={duel.state.rosterSize}
+                  />
+                )}
+              </>
+            ) : (
+              <Results
+                ended={duel.state.ended}
+                rosterSize={duel.state.rosterSize}
+                onPlayAgain={match.reset}
+              />
+            )}
+          </>
+        )}
+      </main>
+    </div>
   );
 }

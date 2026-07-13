@@ -42,7 +42,7 @@ Define once in `client/src/styles/tokens.css`, import from `main.tsx`.
 ---
 
 ## Phase 0 — Foundation
-- [ ] `tokens.css` (palette, type scale, spacing, radii, tier colors as custom
+- [x] `tokens.css` (palette, type scale, spacing, radii, tier colors as custom
   properties) + global reset/base styles + app shell: centered column layout, top bar
   with logo-type "NBA AUCTION DRAFT" and the signed-in username — _gate: shell renders,
   tsc + both e2e gates green_

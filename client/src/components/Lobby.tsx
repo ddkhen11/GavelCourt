@@ -26,9 +26,6 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
         </div>
       ) : (
         <div>
-          <p data-testid="identity">
-            Playing as <strong>{match.identity.username}</strong>
-          </p>
           <button
             data-testid="find-ranked"
             disabled={match.status === "searching"}
