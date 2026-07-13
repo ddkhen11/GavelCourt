@@ -58,7 +58,7 @@ Define once in `client/src/styles/tokens.css`, import from `main.tsx`.
 - [x] Matchmaking panel: "Find Ranked Match" as the hero action (searching state with
   animated indicator), challenge create/join as a secondary card with a copyable join
   code; error states styled inline — _gate: e2e green + lobby.png_
-- [ ] Leaderboard: ranked table with position medals for the top 3, elo as the big
+- [x] Leaderboard: ranked table with position medals for the top 3, elo as the big
   number, W/L record muted; current player's row highlighted — _gate: e2e green +
   lobby.png reviewed_
 - [ ] 🚦 **Lobby review**: human looks at lobby.png / live app — _gate: human approves_

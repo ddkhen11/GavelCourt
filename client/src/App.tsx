@@ -46,7 +46,7 @@ export default function App() {
         {matchId === null ? (
           <>
             <Lobby match={match} />
-            <Leaderboard />
+            <Leaderboard currentUsername={match.identity?.username} />
           </>
         ) : (
           <>
