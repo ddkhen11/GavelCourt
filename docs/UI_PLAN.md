@@ -81,7 +81,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] Player card component: vintage trading-card layout (name, season, team, position
   badge), tier-inked double-rule frame + tier letter badge, flip-in animation on each
   new card (`prefers-reduced-motion`: fade) — _gate: e2e green + board.png_
-- [ ] Bid HUD: both players' credits and roster as 5 slot-dots, you vs opponent framing;
+- [x] Bid HUD: both players' credits and roster as 5 slot-dots, you vs opponent framing;
   countdown bar animating across `duration_seconds` when the window opens; max-bid
   shown next to the input — _gate: e2e green + board.png_
 - [ ] Bid controls: numeric input with +/- steppers, quick chips (min / half / max),

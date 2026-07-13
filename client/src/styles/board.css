@@ -1,3 +1,132 @@
+/* ── the duel board ───────────────────────────────────────────────────── */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* broadcast scorebug: you (rust) vs opponent (navy) */
+.scorebug {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  background: var(--paper-raised);
+  border: var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--stamp);
+  overflow: hidden;
+}
+
+.sb-side {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  color: var(--paper);
+  min-width: 0;
+}
+
+.sb-you {
+  background: var(--rust);
+}
+
+.sb-opp {
+  background: var(--navy);
+  justify-content: flex-end;
+}
+
+.sb-team {
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.sb-credits {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.sb-vs {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-3);
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  border-inline: var(--rule);
+}
+
+.sb-slots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.slot {
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(244, 236, 217, 0.9);
+  display: inline-block;
+}
+
+.slot-filled {
+  background: var(--paper);
+}
+
+.board-meta {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* ── bid bar: countdown + window line ─────────────────────────────────── */
+
+.bidbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(360px, 100%);
+  margin-inline: auto;
+}
+
+.countdown {
+  height: 8px;
+  background: var(--paper-deep);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.countdown-fill {
+  height: 100%;
+  background: var(--rust-bright);
+  transform-origin: left;
+  animation: countdown-drain linear forwards;
+}
+
+@keyframes countdown-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.bidbar-line {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
 /* ── the duel board: vintage trading card ─────────────────────────────── */
 
 .pcard {

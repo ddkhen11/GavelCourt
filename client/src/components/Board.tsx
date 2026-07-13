@@ -17,6 +17,17 @@ interface BoardProps {
   sendPass: () => void;
 }
 
+// 5 seat squares on the scorebug, filled as a side drafts
+function Slots({ n, filled }: { n: number; filled: number }) {
+  return (
+    <span className="sb-slots" aria-label={`${filled} of ${n} seats filled`}>
+      {Array.from({ length: n }, (_, i) => (
+        <span key={i} className={"slot" + (i < filled ? " slot-filled" : "")} />
+      ))}
+    </span>
+  );
+}
+
 export default function Board({ state, sendReady, sendBid, sendPass }: BoardProps) {
   const [amount, setAmount] = useState("");
   const bidding = state.bidWindow !== null;
@@ -52,13 +63,23 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
   const full = state.myDrafted >= state.rosterSize;
 
   return (
-    <section>
-      <p data-testid="game-started">
-        board={state.boardSize} credits={state.credits}
-      </p>
-      <p data-testid="credits">
-        You: {state.credits} cr, {state.myDrafted}/{state.rosterSize} — Opponent:{" "}
-        {state.opponentCredits} cr, {state.oppDrafted}/{state.rosterSize}
+    <section className="board">
+      <div className="scorebug" data-testid="credits">
+        <div className="sb-side sb-you">
+          <span className="sb-team">You</span>
+          <span className="sb-credits tnum">{state.credits}</span>
+          <Slots n={state.rosterSize} filled={state.myDrafted} />
+        </div>
+        <span className="sb-vs">vs</span>
+        <div className="sb-side sb-opp">
+          <Slots n={state.rosterSize} filled={state.oppDrafted} />
+          <span className="sb-credits tnum">{state.opponentCredits}</span>
+          <span className="sb-team">Opp</span>
+        </div>
+      </div>
+      <p className="board-meta" data-testid="game-started">
+        {state.boardSize}-card board · {state.rosterSize} seats a side · blind
+        bids
       </p>
 
       {state.card && (
@@ -103,10 +124,22 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
       )}
 
       {bidding && !full && (
-        <div data-testid="bid-window">
-          <p>
-            Bid window open ({state.bidWindow!.seconds}s) — max bid{" "}
-            <strong data-testid="max-bid">{state.bidWindow!.maxBid}</strong>
+        <div data-testid="bid-window" className="bidbar">
+          <div
+            className="countdown"
+            key={state.card?.number}
+            aria-hidden="true"
+          >
+            <div
+              className="countdown-fill"
+              style={{ animationDuration: `${state.bidWindow!.seconds}s` }}
+            />
+          </div>
+          <p className="bidbar-line">
+            Window open ({state.bidWindow!.seconds}s) — max bid{" "}
+            <strong className="tnum" data-testid="max-bid">
+              {state.bidWindow!.maxBid}
+            </strong>
           </p>
           <input
             data-testid="bid-amount"
