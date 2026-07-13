@@ -1,5 +1,15 @@
 import { useState } from "react";
-import type { useMatch } from "../hooks/useMatch";
+import type { MatchStatus, useMatch } from "../hooks/useMatch";
+
+// Human copy for the raw machine status (kept verbatim in data-status).
+const STATUS_COPY: Record<MatchStatus, string> = {
+  idle: "",
+  registering: "Creating your player…",
+  searching: "Searching for an opponent…",
+  waiting: "Waiting for your opponent to join…",
+  matched: "Matched!",
+  error: "",
+};
 
 export default function Lobby({ match }: { match: ReturnType<typeof useMatch> }) {
   const [username, setUsername] = useState("");
@@ -7,63 +17,102 @@ export default function Lobby({ match }: { match: ReturnType<typeof useMatch> })
   const [joinCode, setJoinCode] = useState("");
 
   return (
-    <section>
+    <section className="lobby">
       {!match.identity ? (
-        <div>
+        <div className="register-panel panel">
+          <h2 className="register-title">Enter the arena</h2>
           <input
+            className="register-input"
             data-testid="username"
-            placeholder="username"
+            placeholder="pick a username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <button
+            className="register-button"
             data-testid="register"
             disabled={!username}
             onClick={() => void match.register(username)}
           >
             Register
           </button>
+          <p className="register-blurb">
+            Outbid your rival for hidden NBA legends — the best five-man lineup
+            wins.
+          </p>
         </div>
       ) : (
-        <div>
-          <button
-            data-testid="find-ranked"
-            disabled={match.status === "searching"}
-            onClick={() => void match.findRankedMatch()}
-          >
-            {match.status === "searching" ? "Searching…" : "Find Ranked Match"}
-          </button>
-          <button
-            data-testid="create-challenge"
-            onClick={() => void match.createChallenge()}
-          >
-            Create Challenge
-          </button>
-          <div>
-            <input
-              data-testid="join-match-id"
-              placeholder="match id"
-              value={joinMatchId}
-              onChange={(e) => setJoinMatchId(e.target.value)}
-            />
-            <input
-              data-testid="join-code"
-              placeholder="join code"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value)}
-            />
+        <div className="mm-grid">
+          <div className="panel mm-ranked">
+            <h2 className="mm-title">Ranked duel</h2>
+            <p className="mm-sub">
+              Queue up — you're matched with the next challenger.
+            </p>
             <button
-              data-testid="join-challenge"
-              disabled={!joinMatchId || !joinCode}
-              onClick={() => void match.joinChallenge(joinMatchId, joinCode)}
+              className="mm-find"
+              data-testid="find-ranked"
+              disabled={match.status === "searching"}
+              onClick={() => void match.findRankedMatch()}
             >
-              Join Challenge
+              {match.status === "searching" ? (
+                <>
+                  Searching
+                  <span className="mm-dots" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </>
+              ) : (
+                "Find Ranked Match"
+              )}
             </button>
+          </div>
+          <div className="panel mm-challenge">
+            <h3 className="mm-title-sm">Challenge a friend</h3>
+            <button
+              className="btn-secondary"
+              data-testid="create-challenge"
+              onClick={() => void match.createChallenge()}
+            >
+              Create Challenge
+            </button>
+            <div className="mm-divider" role="presentation">
+              or join with a code
+            </div>
+            <div className="mm-join">
+              <input
+                data-testid="join-match-id"
+                placeholder="match id"
+                value={joinMatchId}
+                onChange={(e) => setJoinMatchId(e.target.value)}
+              />
+              <input
+                data-testid="join-code"
+                placeholder="join code"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+              />
+              <button
+                className="btn-secondary"
+                data-testid="join-challenge"
+                disabled={!joinMatchId || !joinCode}
+                onClick={() => void match.joinChallenge(joinMatchId, joinCode)}
+              >
+                Join Challenge
+              </button>
+            </div>
           </div>
         </div>
       )}
-      <p data-testid="status">{match.status}</p>
-      {match.error && <p data-testid="error">{match.error}</p>}
+      <p className="lobby-status" data-testid="status" data-status={match.status}>
+        {STATUS_COPY[match.status]}
+      </p>
+      {match.error && (
+        <p className="lobby-error" data-testid="error">
+          {match.error}
+        </p>
+      )}
     </section>
   );
 }

@@ -53,9 +53,9 @@ Define once in `client/src/styles/tokens.css`, import from `main.tsx`.
   `--duel` writes board.png + results.png_
 
 ## Phase 1 — Lobby
-- [ ] Register screen: single centered panel, big name input, one primary button,
+- [x] Register screen: single centered panel, big name input, one primary button,
   one-line game explainer underneath — _gate: e2e green + lobby.png_
-- [ ] Matchmaking panel: "Find Ranked Match" as the hero action (searching state with
+- [x] Matchmaking panel: "Find Ranked Match" as the hero action (searching state with
   animated indicator), challenge create/join as a secondary card with a copyable join
   code; error states styled inline — _gate: e2e green + lobby.png_
 - [ ] Leaderboard: ranked table with position medals for the top 3, elo as the big

@@ -125,6 +125,18 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* quieter alternative to the hardwood-orange default button */
+.btn-secondary {
+  color: var(--ink);
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #24314e;
+  border-color: var(--muted);
+}
+
 input {
   font: inherit;
   color: var(--ink);

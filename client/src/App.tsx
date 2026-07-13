@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMatch } from "./hooks/useMatch";
 import { useDuel } from "./hooks/useDuel";
 import Lobby from "./components/Lobby";
@@ -5,6 +6,23 @@ import Leaderboard from "./components/Leaderboard";
 import Board from "./components/Board";
 import Lineup from "./components/Lineup";
 import Results from "./components/Results";
+
+function CopyButton({ label, text }: { label: string; text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      className="btn-secondary copy-btn"
+      onClick={() => {
+        void navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+    >
+      {copied ? "Copied!" : label}
+    </button>
+  );
+}
 
 export default function App() {
   const match = useMatch();
@@ -32,12 +50,31 @@ export default function App() {
           </>
         ) : (
           <>
-            <p data-testid="match-id">{matchId}</p>
+            <p className="match-meta">
+              <span className="hud-label">Match</span>{" "}
+              <code data-testid="match-id" className="match-id">
+                {matchId}
+              </code>
+            </p>
             {!duel.state.started && match.status === "waiting" && match.joinCode && (
-              <p>
-                Share match id <code>{matchId}</code> and code{" "}
-                <code data-testid="challenge-code">{match.joinCode}</code>
-              </p>
+              <div className="panel waiting-room">
+                <h2 className="waiting-title">Challenge created</h2>
+                <p className="waiting-sub">
+                  Send your friend the match id and join code.
+                </p>
+                <div className="code-row">
+                  <div className="code-chip">
+                    <span className="hud-label">match id</span>
+                    <code>{matchId}</code>
+                    <CopyButton label="Copy" text={matchId} />
+                  </div>
+                  <div className="code-chip">
+                    <span className="hud-label">join code</span>
+                    <code data-testid="challenge-code">{match.joinCode}</code>
+                    <CopyButton label="Copy" text={match.joinCode} />
+                  </div>
+                </div>
+              </div>
             )}
 
             {!duel.state.ended ? (
