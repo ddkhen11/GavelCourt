@@ -112,7 +112,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] States pass: connecting/waiting-for-opponent states styled, stream-lost banner,
   empty leaderboard copy; `<title>` + favicon; remove any remaining unstyled element —
   _gate: e2e green + all screenshots refreshed_
-- [ ] 🚦 **Final visual playthrough**: two browsers, full match start→finish — _gate:
+- [x] 🚦 **Final visual playthrough**: two browsers, full match start→finish — _gate:
   human signs off_
 
 ---
