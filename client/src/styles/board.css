@@ -358,7 +358,7 @@
   border-top: var(--perforation);
 }
 
-/* pity banner — full gold-foil treatment lands with the resolve task */
+/* pity banner */
 .pcard-pity {
   font-family: var(--font-slab);
   font-size: var(--text-xs);
@@ -370,4 +370,104 @@
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   padding: var(--sp-1) var(--sp-2);
+}
+
+/* gold-foil frame for the pity pull: gold outer frame and gold inner rule */
+.pcard-foil {
+  border-color: var(--gold);
+  box-shadow:
+    var(--stamp),
+    0 0 0 1px var(--gold);
+}
+
+.pcard-foil::before {
+  border-color: var(--gold);
+  border-width: 2px;
+}
+
+/* ── resolve slip: the SOLD stamp ─────────────────────────────────────── */
+
+.resolve-slip {
+  width: min(360px, 100%);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--paper-raised);
+  border: var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--stamp-sm);
+  padding: var(--sp-3) var(--sp-4);
+  text-align: center;
+}
+
+.resolve-stamp {
+  font-size: var(--text-lg);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px var(--sp-3);
+  border: 3px solid currentColor;
+  border-radius: var(--radius);
+  transform: rotate(-5deg);
+  animation: stamp-in var(--speed) var(--ease);
+}
+
+.resolve-win .resolve-stamp {
+  color: var(--win);
+}
+
+.resolve-lose .resolve-stamp {
+  color: var(--lose);
+}
+
+@keyframes stamp-in {
+  from {
+    transform: rotate(-5deg) scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(-5deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.resolve-slip p {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.resolve-score {
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+
+/* ── error slips: print corrections that fade out ─────────────────────── */
+
+.error-slips {
+  width: min(360px, 100%);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  transition: opacity var(--speed-slow) var(--ease);
+}
+
+.error-slips-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.error-slip {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  color: var(--lose);
+  background: var(--paper-raised);
+  border: 1px solid var(--lose);
+  border-left: 4px solid var(--lose);
+  border-radius: var(--radius);
+  padding: var(--sp-2) var(--sp-3);
+  transform: rotate(-0.5deg);
 }

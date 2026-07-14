@@ -110,11 +110,15 @@ function applyEvent(prev: DuelState, ev: GameEvent): DuelState {
       const e = ev.getCardFlipped()!;
       const c = e.getCard()!;
       const isPity = prev.pityPending;
+      // lastResolve is NOT cleared here: the server flips the next card in the
+      // same instant as BidResolved, and both events land in one React batch —
+      // clearing on flip would make the resolve reveal unrenderable. It is
+      // replaced on the next BID_RESOLVED instead. (User-approved exception to
+      // the UI-plan "no hook changes" rule, 2026-07-13.)
       return {
         ...prev,
         pityPending: false,
         bidWindow: null,
-        lastResolve: null,
         card: {
           number: e.getCardNumber(),
           remaining: e.getCardsRemaining(),

@@ -28,6 +28,51 @@ function Slots({ n, filled }: { n: number; filled: number }) {
   );
 }
 
+// Rolls 0 -> value like a flipping scoreboard; renders the final number
+// immediately under prefers-reduced-motion.
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(value);
+      return;
+    }
+    let raf: number;
+    const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / 600);
+      setShown(value * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{shown.toFixed(1)}</>;
+}
+
+// Latest stream errors as print-correction slips; they linger 4s after the
+// most recent error, then hide (the element stays for the testid).
+function ErrorSlips({ errors }: { errors: string[] }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    setVisible(true);
+    const t = setTimeout(() => setVisible(false), 4000);
+    return () => clearTimeout(t);
+  }, [errors]);
+  return (
+    <div
+      className={"error-slips" + (visible ? "" : " error-slips-hidden")}
+      data-testid="duel-errors"
+    >
+      {errors.slice(-2).map((e, i) => (
+        <p key={`${errors.length}-${i}`} className="error-slip">
+          {e}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function Board({ state, sendReady, sendBid, sendPass }: BoardProps) {
   const [amount, setAmount] = useState("");
   const bidding = state.bidWindow !== null;
@@ -52,6 +97,8 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
     const cur = amount !== "" && Number.isInteger(parsedBid) ? parsedBid : 0;
     setAmount(String(Math.min(max, Math.max(0, cur + d))));
   };
+
+  const resolve = state.lastResolve;
 
   if (!state.started) {
     return (
@@ -93,9 +140,10 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
         <div
           key={state.card.number}
           data-testid="card"
-          className={`pcard pcard-${(
-            TIER_NAMES[state.card.tier] ?? "c"
-          ).toLowerCase()}`}
+          className={
+            `pcard pcard-${(TIER_NAMES[state.card.tier] ?? "c").toLowerCase()}` +
+            (state.card.isPity ? " pcard-foil" : "")
+          }
         >
           {state.card.isPity && (
             <p className="pcard-pity" data-testid="pity">
@@ -219,22 +267,36 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
         </p>
       )}
 
-      {state.lastResolve && (
-        <p data-testid="resolve">
-          {state.lastResolve.youWon ? "You won" : "Opponent won"}{" "}
-          {state.lastResolve.stats.playerName} for {state.lastResolve.winningBid} (you{" "}
-          {state.lastResolve.yourBid}, opp {state.lastResolve.opponentBid}) — LAKER{" "}
-          {state.lastResolve.stats.lakerScore.toFixed(1)}
-        </p>
+      {resolve && (
+        <div
+          key={resolve.stats.playerId}
+          className={
+            "resolve-slip " + (resolve.youWon ? "resolve-win" : "resolve-lose")
+          }
+        >
+          <span className="resolve-stamp" aria-hidden="true">
+            {resolve.youWon ? "Sold to you" : "Sold to opp"}
+          </span>
+          <p data-testid="resolve">
+            {resolve.youWon ? "You won" : "Opponent won"}{" "}
+            {resolve.stats.playerName} for{" "}
+            <span className="tnum">{resolve.winningBid}</span> (you{" "}
+            {resolve.yourBid}, opp {resolve.opponentBid}) — LAKER{" "}
+            <strong className="resolve-score tnum">
+              <CountUp value={resolve.stats.lakerScore} />
+            </strong>
+          </p>
+        </div>
       )}
 
       {state.consecutivePasses > 0 && (
-        <p data-testid="passes">Consecutive passes: {state.consecutivePasses}</p>
+        <p className="board-notice" data-testid="passes">
+          Pass streak: {state.consecutivePasses} — keep passing and a premium
+          card gets pulled
+        </p>
       )}
 
-      {state.errors.length > 0 && (
-        <p data-testid="duel-errors">{state.errors.join(" | ")}</p>
-      )}
+      {state.errors.length > 0 && <ErrorSlips errors={state.errors} />}
     </section>
   );
 }

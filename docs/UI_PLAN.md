@@ -15,6 +15,9 @@ If you hit a 🚦 gate, or a gate fails after 2 attempts, STOP and summarize for
 ## Hard rules (every task, non-negotiable)
 - **Styling and markup only.** Do not change `useMatch`/`useDuel` logic, the proto, or
   the server. New presentational state (e.g. a countdown tick) lives in components.
+  _One approved exception (2026-07-13): `useDuel` no longer clears `lastResolve` on
+  CARD_FLIPPED — the server flips the next card in the same React batch, which made
+  the resolve reveal unrenderable._
 - **Never remove or rename a `data-testid`.** The four e2e gates must stay green.
 - **Gate ritual** after every task: `npx tsc --noEmit`, then with the dev stack up
   (`/devup`) run `node e2e/gate_usematch.mjs` and `node e2e/gate_components.mjs` from
@@ -87,7 +90,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] Bid controls: numeric input with +/- steppers, quick chips (min / half / max),
   distinct Pass button; disabled/full-roster states obvious — _gate: e2e green +
   board.png_
-- [ ] Resolve + events feed: win/lose stamp on resolution with the revealed LAKER score
+- [x] Resolve + events feed: win/lose stamp on resolution with the revealed LAKER score
   counting up, pass streak indicator, pity card gets a gold-foil frame treatment,
   inline error slips (from `duel-errors`) that auto-dismiss — _gate: e2e green +
   board.png_
