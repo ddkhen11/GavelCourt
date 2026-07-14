@@ -471,3 +471,112 @@
   padding: var(--sp-2) var(--sp-3);
   transform: rotate(-0.5deg);
 }
+
+/* ── lineup: five ticket seats ────────────────────────────────────────── */
+
+.lineup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.lineup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
+  border-bottom: var(--rule);
+  padding-bottom: var(--sp-2);
+}
+
+.lineup-title {
+  font-size: var(--text-md);
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.lineup-count {
+  color: var(--ink-soft);
+  font-weight: 400;
+  font-size: var(--text-sm);
+  font-style: normal;
+}
+
+.lineup-impact strong {
+  font-size: var(--text-lg);
+}
+
+.lineup-slots {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-2);
+}
+
+@media (max-width: 720px) {
+  .lineup-slots {
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  }
+}
+
+.mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  background: var(--paper-raised);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--stamp-sm);
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.mini-name {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-meta {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.mini-score {
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+/* an unsold seat: perforated outline + faint position hint */
+.mini-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 76px;
+  border: var(--perforation);
+  border-radius: var(--radius);
+  padding: var(--sp-2);
+  color: var(--ink-soft);
+}
+
+.mini-hint {
+  font-size: var(--text-lg);
+  font-weight: 900;
+  opacity: 0.55;
+}
+
+.mini-hint-label {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}

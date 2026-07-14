@@ -94,11 +94,11 @@ AI-generated. This direction replaces it everywhere. Define once in
   counting up, pass streak indicator, pity card gets a gold-foil frame treatment,
   inline error slips (from `duel-errors`) that auto-dismiss — _gate: e2e green +
   board.png_
-- [ ] 🚦 **Board review**: human plays a few auctions in the browser — _gate: human
+- [x] 🚦 **Board review**: human plays a few auctions in the browser — _gate: human
   approves the game feel_
 
 ## Phase 3 — Lineup & results
-- [ ] Lineup panel: 5 fixed slots that fill with mini-cards as you draft (empty slots
+- [x] Lineup panel: 5 fixed slots that fill with mini-cards as you draft (empty slots
   show position hints), running impact total — _gate: e2e green + board.png_
 - [ ] Results screen: verdict banner (win/lose/tie/forfeit), score breakdown bars
   (impact + bonus) counting up, side-by-side lineup comparison with per-player LAKER
