@@ -66,6 +66,7 @@ try {
       playLoop(p2, "p2", 1, deadline),
     ]);
     await p1.getByTestId("results").waitFor({ timeout: 10000 });
+    await p1.waitForTimeout(1200); // let bars and count-ups finish
     await shot(p1, "results");
   }
 } finally {

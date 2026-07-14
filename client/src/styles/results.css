@@ -1,0 +1,171 @@
+/* ── results: the final box score ─────────────────────────────────────── */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.verdict {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  border-width: 3px;
+}
+
+.verdict-title {
+  font-size: var(--text-2xl);
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  animation: verdict-stamp var(--speed) var(--ease);
+}
+
+.verdict-win .verdict-title {
+  color: var(--win);
+}
+
+.verdict-lose .verdict-title {
+  color: var(--lose);
+}
+
+@keyframes verdict-stamp {
+  from {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.verdict-forfeit {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.verdict-elo {
+  align-self: center;
+  font-family: var(--font-slab);
+  font-size: var(--text-md);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper-deep);
+  padding: var(--sp-1) var(--sp-3);
+}
+
+/* ── score breakdown bars ─────────────────────────────────────────────── */
+
+.score-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr 4.5rem;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.score-label {
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+.score-track {
+  display: flex;
+  height: 22px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.score-seg {
+  height: 100%;
+  animation: bar-grow 900ms var(--ease);
+}
+
+/* keyframe has no `to`: it grows into the inline width */
+@keyframes bar-grow {
+  from {
+    width: 0;
+  }
+}
+
+.score-you .score-seg-impact {
+  background: var(--rust);
+}
+
+.score-opp .score-seg-impact {
+  background: var(--navy);
+}
+
+.score-seg-bonus {
+  background: var(--gold);
+}
+
+.score-total {
+  font-size: var(--text-lg);
+  text-align: right;
+}
+
+.score-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ink);
+}
+
+.legend-impact {
+  background: var(--rust);
+}
+
+.legend-bonus {
+  background: var(--gold);
+}
+
+/* ── lineup comparison + exit ─────────────────────────────────────────── */
+
+.lineup-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+/* half-width panels: let the five seats wrap instead of squeezing */
+.lineup-compare .lineup-slots {
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+}
+
+@media (max-width: 900px) {
+  .lineup-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+.play-again {
+  align-self: center;
+  font-size: var(--text-lg);
+  padding: var(--sp-3) var(--sp-7);
+}

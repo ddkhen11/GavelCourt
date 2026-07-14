@@ -100,7 +100,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 ## Phase 3 — Lineup & results
 - [x] Lineup panel: 5 fixed slots that fill with mini-cards as you draft (empty slots
   show position hints), running impact total — _gate: e2e green + board.png_
-- [ ] Results screen: verdict banner (win/lose/tie/forfeit), score breakdown bars
+- [x] Results screen: verdict banner (win/lose/tie/forfeit), score breakdown bars
   (impact + bonus) counting up, side-by-side lineup comparison with per-player LAKER
   scores, elo delta chip, prominent "Back to lobby" — _gate: e2e green + results.png_
 - [ ] 🚦 **Results review**: human finishes a full match — _gate: human approves_

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CardTier } from "duel-protos";
 import type { DuelState } from "../hooks/useDuel";
+import CountUp from "./CountUp";
 
 // Keyed off the generated enum so a proto renumber can't silently skew these.
 const TIER_NAMES: Record<number, string> = {
@@ -26,28 +27,6 @@ function Slots({ n, filled }: { n: number; filled: number }) {
       ))}
     </span>
   );
-}
-
-// Rolls 0 -> value like a flipping scoreboard; renders the final number
-// immediately under prefers-reduced-motion.
-function CountUp({ value }: { value: number }) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setShown(value);
-      return;
-    }
-    let raf: number;
-    const t0 = performance.now();
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - t0) / 600);
-      setShown(value * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value]);
-  return <>{shown.toFixed(1)}</>;
 }
 
 // Latest stream errors as print-correction slips; they linger 4s after the
