@@ -6,6 +6,64 @@
   gap: var(--sp-4);
 }
 
+/* pre-game: the gate check before tip-off */
+.pregame {
+  align-self: center;
+  width: min(440px, 100%);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+  border-width: 3px;
+}
+
+.pregame-title {
+  font-size: var(--text-xl);
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.pregame-conn {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--win);
+}
+
+.pregame-conn-lost {
+  color: var(--lose);
+}
+
+.pregame-ready {
+  font-size: var(--text-lg);
+  padding: var(--sp-3) var(--sp-7);
+}
+
+.pregame-wait {
+  font-family: var(--font-slab);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+/* the feed died mid-match */
+.stream-lost {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--paper);
+  background: var(--lose);
+  border: var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--stamp-sm);
+  padding: var(--sp-2) var(--sp-4);
+}
+
 /* broadcast scorebug: you (rust) vs opponent (navy) */
 .scorebug {
   display: grid;

@@ -27,6 +27,11 @@ export default function Leaderboard({
           {error}
         </p>
       )}
+      {!error && entries.length === 0 && (
+        <p className="lb-empty">
+          Nothing in the books yet — win a ranked duel and make the page.
+        </p>
+      )}
       <div className="lb-head" aria-hidden="true">
         <span>no.</span>
         <span>player</span>

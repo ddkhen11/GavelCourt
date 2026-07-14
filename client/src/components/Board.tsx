@@ -81,14 +81,23 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
 
   if (!state.started) {
     return (
-      <section>
-        <p data-testid="duel-connected">
-          {state.connected ? "connected" : "disconnected"}
+      <section className="pregame panel">
+        <p className="hud-label">Pre-game · gate check</p>
+        <h2 className="pregame-title">Tip-off</h2>
+        <p
+          className={
+            "pregame-conn" + (state.connected ? "" : " pregame-conn-lost")
+          }
+        >
+          feed{" "}
+          <span data-testid="duel-connected">
+            {state.connected ? "connected" : "disconnected"}
+          </span>
         </p>
-        <button data-testid="ready" onClick={sendReady}>
+        <button className="pregame-ready" data-testid="ready" onClick={sendReady}>
           Ready
         </button>
-        <p>Waiting for both players…</p>
+        <p className="pregame-wait">Waiting for both players…</p>
       </section>
     );
   }
@@ -114,6 +123,13 @@ export default function Board({ state, sendReady, sendBid, sendPass }: BoardProp
         {state.boardSize}-card board · {state.rosterSize} seats a side · blind
         bids
       </p>
+
+      {!state.connected && (
+        <p className="stream-lost" role="alert">
+          Transmission lost — the feed dropped. A dead connection forfeits the
+          match.
+        </p>
+      )}
 
       {state.card && (
         <div

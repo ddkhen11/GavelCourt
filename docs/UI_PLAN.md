@@ -109,7 +109,7 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] Responsive pass: playable at 1280px two-window side-by-side and at ~700px wide;
   no horizontal scroll anywhere (screenshot.mjs `--width=N` asserts zero horizontal
   overflow) — _gate: screenshots at 640px and 1280px, e2e green_
-- [ ] States pass: connecting/waiting-for-opponent states styled, stream-lost banner,
+- [x] States pass: connecting/waiting-for-opponent states styled, stream-lost banner,
   empty leaderboard copy; `<title>` + favicon; remove any remaining unstyled element —
   _gate: e2e green + all screenshots refreshed_
 - [ ] 🚦 **Final visual playthrough**: two browsers, full match start→finish — _gate:

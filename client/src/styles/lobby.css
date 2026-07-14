@@ -263,6 +263,18 @@
   padding-bottom: var(--sp-1);
 }
 
+.lb-empty {
+  font-family: var(--font-slab);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-align: center;
+  border: var(--perforation);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+}
+
 .lb-head span:nth-child(3),
 .lb-head span:nth-child(4) {
   text-align: right;
