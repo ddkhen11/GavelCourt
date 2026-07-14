@@ -176,6 +176,7 @@
 
 .match-id {
   font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }
 
 /* the stub you tear off and hand to a friend */

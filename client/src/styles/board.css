@@ -84,6 +84,22 @@
   text-align: center;
 }
 
+/* narrow viewports: the scorebug stacks into two full-width team strips */
+@media (max-width: 700px) {
+  .scorebug {
+    grid-template-columns: 1fr;
+  }
+
+  .sb-vs {
+    display: none;
+  }
+
+  .sb-side,
+  .sb-opp {
+    justify-content: space-between;
+  }
+}
+
 /* ── bid bar: countdown + window line ─────────────────────────────────── */
 
 .bidbar {

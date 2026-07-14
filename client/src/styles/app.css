@@ -63,3 +63,14 @@
   flex-direction: column;
   gap: var(--sp-5);
 }
+
+@media (max-width: 700px) {
+  .topbar {
+    flex-wrap: wrap;
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .shell {
+    padding: var(--sp-4) var(--sp-3);
+  }
+}

@@ -103,11 +103,12 @@ AI-generated. This direction replaces it everywhere. Define once in
 - [x] Results screen: verdict banner (win/lose/tie/forfeit), score breakdown bars
   (impact + bonus) counting up, side-by-side lineup comparison with per-player LAKER
   scores, elo delta chip, prominent "Back to lobby" — _gate: e2e green + results.png_
-- [ ] 🚦 **Results review**: human finishes a full match — _gate: human approves_
+- [x] 🚦 **Results review**: human finishes a full match — _gate: human approves_
 
 ## Phase 4 — Polish
-- [ ] Responsive pass: playable at 1280px two-window side-by-side and at ~700px wide;
-  no horizontal scroll anywhere — _gate: screenshots at 640px and 1280px, e2e green_
+- [x] Responsive pass: playable at 1280px two-window side-by-side and at ~700px wide;
+  no horizontal scroll anywhere (screenshot.mjs `--width=N` asserts zero horizontal
+  overflow) — _gate: screenshots at 640px and 1280px, e2e green_
 - [ ] States pass: connecting/waiting-for-opponent states styled, stream-lost banner,
   empty leaderboard copy; `<title>` + favicon; remove any remaining unstyled element —
   _gate: e2e green + all screenshots refreshed_
